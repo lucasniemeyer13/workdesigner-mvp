@@ -2425,7 +2425,7 @@
 
             try {
                 const endpoint = ENDPOINTS.generateTasks;
-                if (endpoint && !endpoint.includes('YOUR_SCRIPT_ID')) {
+                if (endpoint && !endpoint.includes('AKfycbyQzR7VkX2w8CPkmEfU9btALk-8u8PamoaEcUnmkJC3yFQfTR3_5vRtEooxQcIrSm3r')) {
                     console.log('[Gemini] Chamando endpoint:', endpoint);
                     const t0 = Date.now();
 
@@ -2499,7 +2499,7 @@
                         alert('Gemini retornou erro em todos os cargos: ' + (result.error || JSON.stringify(result.errors) || 'desconhecido') + '\n\nDetalhes no console. Usando templates padrão.');
                     }
                 } else {
-                    console.warn('[Gemini] Endpoint não configurado (YOUR_SCRIPT_ID)');
+                    console.warn('[Gemini] Endpoint não configurado (AKfycbyQzR7VkX2w8CPkmEfU9btALk-8u8PamoaEcUnmkJC3yFQfTR3_5vRtEooxQcIrSm3r)');
                 }
             } catch (err) {
                 console.error('[Gemini] Erro:', err);
@@ -3558,7 +3558,7 @@
             }
 
             const base = ENDPOINTS.saveOrg.split('?')[0];
-            if (base.includes('YOUR_SCRIPT_ID')) {
+            if (base.includes('AKfycbyQzR7VkX2w8CPkmEfU9btALk-8u8PamoaEcUnmkJC3yFQfTR3_5vRtEooxQcIrSm3r')) {
                 comparison.innerHTML = '<div style="color:#E74C3C;">Endpoint do Apps Script não configurado.</div>';
                 status.innerHTML = '';
                 return;
@@ -3829,7 +3829,7 @@
             const toast = showSaveToast(silent ? 'Salvando...' : '⏳ Salvando no Google Sheets...');
 
             try {
-                if (ENDPOINTS.saveResults.includes('YOUR_SCRIPT_ID')) {
+                if (ENDPOINTS.saveResults.includes('AKfycbyQzR7VkX2w8CPkmEfU9btALk-8u8PamoaEcUnmkJC3yFQfTR3_5vRtEooxQcIrSm3r')) {
                     throw new Error('Endpoint não configurado');
                 }
                 const response = await fetch(ENDPOINTS.saveResults, {
