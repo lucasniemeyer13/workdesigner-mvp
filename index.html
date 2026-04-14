@@ -1,0 +1,3541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkDesigner — Inteli (Caso Exemplo)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F8F9FC;
+            color: #1A1A2E;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #22272e;
+            padding: 40px 20px;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .sidebar * {
+            color: #FFFFFF;
+        }
+
+        .sidebar .step-item {
+            color: #FFFFFF;
+        }
+
+        .sidebar .progress-label {
+            color: #FFFFFF;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            width: 180px;
+            height: auto;
+            opacity: 0.9;
+        }
+
+        .progress-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00B894, #6C5CE7);
+            transition: width 0.3s ease;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .step-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0.6;
+        }
+
+        .step-item.active {
+            background: rgba(108, 92, 231, 0.2);
+            color: #00B894;
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        .main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1A1A2E;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1A1A2E;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1A1A2E;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #4A4A6A;
+            margin-bottom: 32px;
+        }
+
+        /* Forms and Inputs */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1A1A2E;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #E0E0E8;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: #1A1A2E;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6C5CE7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 24px;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #FFFFFF;
+        }
+
+        th {
+            background: #F8F9FC;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4A4A6A;
+            border-bottom: 1px solid #E0E0E8;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #E0E0E8;
+            font-size: 13px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-cell-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #E0E0E8;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+        }
+
+        .table-cell-input:focus {
+            outline: none;
+            border-color: #6C5CE7;
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .table-cell-input[type="number"] {
+            width: 50px;
+        }
+
+        tbody tr:hover {
+            background: #F8F9FC;
+        }
+
+        /* Buttons */
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button-primary {
+            background: #6C5CE7;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #2D1B69;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(108, 92, 231, 0.2);
+        }
+
+        .button-secondary {
+            background: white;
+            color: #6C5CE7;
+            border: 1px solid #6C5CE7;
+        }
+
+        .button-secondary:hover {
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .button-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .button-add {
+            background: #00B894;
+            color: white;
+            margin-top: 16px;
+        }
+
+        .button-danger {
+            background: #E74C3C;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            justify-content: space-between;
+        }
+
+        .button-group-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1A1A2E;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .stat-card.automate {
+            background: #00B894;
+        }
+
+        .stat-card.augment {
+            background: #6C5CE7;
+        }
+
+        .stat-card.transform {
+            background: #FDCB6E;
+            color: #1A1A2E;
+        }
+
+        .stat-card.preserve {
+            background: #0984E3;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Scatter Plot */
+        .scatter-container {
+            margin-bottom: 32px;
+        }
+
+        .scatter-plot {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .scatter-divider {
+            position: absolute;
+            background: rgba(200, 200, 200, 0.3);
+        }
+
+        .scatter-divider.horizontal {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            left: 0;
+        }
+
+        .scatter-divider.vertical {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            top: 0;
+        }
+
+        .scatter-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .scatter-dot:hover {
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .scatter-dot.automate {
+            background: #00B894;
+        }
+
+        .scatter-dot.augment {
+            background: #6C5CE7;
+        }
+
+        .scatter-dot.transform {
+            background: #FDCB6E;
+        }
+
+        .scatter-dot.preserve {
+            background: #0984E3;
+        }
+
+        .scatter-labels {
+            text-align: center;
+            font-size: 12px;
+            color: #4A4A6A;
+        }
+
+        /* Index Explanations */
+        .indices-section {
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.05), rgba(108, 92, 231, 0.02));
+            border-left: 4px solid #6C5CE7;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .indices-section h3 {
+            margin-bottom: 20px;
+            color: #6C5CE7;
+        }
+
+        .indices-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .index-card {
+            background: white;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .index-card-title {
+            font-weight: 600;
+            color: #6C5CE7;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .index-card-desc {
+            font-size: 12px;
+            color: #4A4A6A;
+            line-height: 1.6;
+        }
+
+        .quadrants-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .quadrant-info {
+            border-radius: 6px;
+            padding: 16px;
+            color: white;
+        }
+
+        .quadrant-info.automate {
+            background: #00B894;
+        }
+
+        .quadrant-info.augment {
+            background: #6C5CE7;
+        }
+
+        .quadrant-info.transform {
+            background: #FDCB6E;
+            color: #1A1A2E;
+        }
+
+        .quadrant-info.preserve {
+            background: #0984E3;
+        }
+
+        .quadrant-info-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .quadrant-info-desc {
+            font-size: 12px;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        /* Tooltip for "Por quê?" */
+        .whyButton {
+            cursor: help;
+            background: none;
+            border: none;
+            color: #6C5CE7;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 2px 6px;
+            margin-left: 4px;
+            text-decoration: underline;
+        }
+
+        .whyButton:hover {
+            color: #2D1B69;
+        }
+
+        .tooltip-box {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-box .tooltip-text {
+            visibility: hidden;
+            background-color: #1A1A2E;
+            color: white;
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: -50px;
+            width: 250px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tooltip-box:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* === Step 2: Slider-based Task Scoring === */
+        .cargo-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .cargo-filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4A4A6A;
+            white-space: nowrap;
+        }
+
+        .cargo-filter-bar select {
+            flex: 1;
+            max-width: 320px;
+            padding: 8px 12px;
+            border: 1px solid #E0E0E8;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: #1A1A2E;
+            background: #F8F9FC;
+        }
+
+        .cargo-filter-bar .cargo-count {
+            font-size: 12px;
+            color: #6C5CE7;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .task-slider-card {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .task-slider-card:hover {
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.08);
+        }
+
+        .task-slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .task-slider-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1A1A2E;
+            flex: 1;
+        }
+
+        .task-slider-name input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px dashed #E0E0E8;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1A1A2E;
+            padding: 4px 0;
+            background: transparent;
+        }
+
+        .task-slider-name input:focus {
+            outline: none;
+            border-bottom-color: #6C5CE7;
+        }
+
+        .task-slider-delete {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .task-slider-delete:hover {
+            color: #E74C3C;
+            background: rgba(231, 76, 60, 0.08);
+        }
+
+        .slider-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 40px;
+        }
+
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slider-dimension-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4A4A6A;
+            white-space: nowrap;
+        }
+
+        .slider-current-label {
+            font-size: 10px;
+            color: #6C5CE7;
+            font-weight: 600;
+            background: rgba(108, 92, 231, 0.08);
+            padding: 2px 10px;
+            border-radius: 10px;
+            white-space: nowrap;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .slider-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .slider-input-row input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #E0E0E8, #E0E0E8);
+            outline: none;
+        }
+
+        .slider-input-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #6C5CE7;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+            transition: transform 0.1s ease;
+        }
+
+        .slider-input-row input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .slider-input-row input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #6C5CE7;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+        }
+
+        .slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            padding: 0;
+        }
+
+        .slider-tick-label {
+            font-size: 9px;
+            color: #AAA;
+            flex: 1;
+        }
+
+        .slider-tick-label:first-child {
+            text-align: left;
+        }
+
+        .slider-tick-label:last-child {
+            text-align: right;
+        }
+
+        .slider-tick-label:not(:first-child):not(:last-child) {
+            text-align: center;
+        }
+
+        .cargo-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #6C5CE7, #2D1B69);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            margin-top: 8px;
+        }
+
+        .cargo-section-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .cargo-section-meta {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .slider-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Analytics Section */
+        .analytics-section {
+            margin-bottom: 32px;
+        }
+
+        .role-card {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .role-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .role-name {
+            font-weight: 600;
+            color: #1A1A2E;
+            font-size: 15px;
+        }
+
+        .role-area {
+            font-size: 12px;
+            color: #4A4A6A;
+        }
+
+        .quadrant-bar {
+            display: flex;
+            gap: 0;
+            height: 24px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            background: #F0F0F0;
+        }
+
+        .quadrant-bar-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            transition: flex 0.3s ease;
+        }
+
+        .quadrant-bar-segment.automate {
+            background: #00B894;
+        }
+
+        .quadrant-bar-segment.augment {
+            background: #6C5CE7;
+        }
+
+        .quadrant-bar-segment.transform {
+            background: #FDCB6E;
+            color: #1A1A2E;
+        }
+
+        .quadrant-bar-segment.preserve {
+            background: #0984E3;
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .metric-label {
+            color: #4A4A6A;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #1A1A2E;
+            font-weight: 600;
+        }
+
+        .suggestion {
+            background: #F8F9FC;
+            border-left: 3px solid #6C5CE7;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #4A4A6A;
+            line-height: 1.6;
+        }
+
+        /* Area Analysis */
+        .area-card {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .area-header {
+            margin-bottom: 16px;
+        }
+
+        .area-title {
+            font-weight: 600;
+            color: #1A1A2E;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .area-meta {
+            font-size: 12px;
+            color: #4A4A6A;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-box {
+            background: #F8F9FC;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .stat-box-label {
+            font-size: 11px;
+            color: #4A4A6A;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .stat-box-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A2E;
+        }
+
+        .maturity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .maturity-badge.high {
+            background: rgba(0, 184, 148, 0.1);
+            color: #00B894;
+        }
+
+        .maturity-badge.medium {
+            background: rgba(108, 92, 231, 0.1);
+            color: #6C5CE7;
+        }
+
+        .maturity-badge.low {
+            background: rgba(253, 203, 110, 0.1);
+            color: #FDCB6E;
+        }
+
+        /* Pie Chart (CSS only) */
+        .pie-chart {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            margin: 16px auto;
+        }
+
+        /* Organization Summary */
+        .org-summary {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .summary-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #E0E0E8;
+        }
+
+        .summary-metric:last-child {
+            border-bottom: none;
+        }
+
+        .summary-metric-label {
+            font-weight: 500;
+            color: #1A1A2E;
+        }
+
+        .summary-metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #6C5CE7;
+        }
+
+        .time-distribution {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .time-category {
+            text-align: center;
+        }
+
+        .time-category-label {
+            font-size: 12px;
+            color: #4A4A6A;
+            margin-bottom: 8px;
+        }
+
+        .time-category-bar {
+            width: 100%;
+            height: 120px;
+            background: #F0F0F0;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-category-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .comparison-section {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .comparison-header {
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .before-after-item {
+            padding: 16px;
+            background: #F8F9FC;
+            border-radius: 6px;
+        }
+
+        .before-after-title {
+            font-weight: 600;
+            color: #6C5CE7;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .before-after-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .before-after-label {
+            color: #4A4A6A;
+        }
+
+        .before-after-value {
+            color: #1A1A2E;
+            font-weight: 600;
+        }
+
+        .harm-distribution {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .harm-title {
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 16px;
+        }
+
+        .harm-bars {
+            display: flex;
+            gap: 4px;
+            height: 100px;
+            align-items: flex-end;
+        }
+
+        .harm-bar {
+            flex: 1;
+            background: #6C5CE7;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            min-height: 4px;
+        }
+
+        .harm-bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #4A4A6A;
+        }
+
+        /* Existing styles continued */
+        .summary-item {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #4A4A6A;
+        }
+
+        .summary-highlight {
+            color: #6C5CE7;
+            font-weight: 700;
+        }
+
+        .quick-win-item {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .quick-win-title {
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 8px;
+        }
+
+        .quick-win-meta {
+            font-size: 12px;
+            color: #4A4A6A;
+            margin-bottom: 8px;
+        }
+
+        .quick-win-playbook {
+            background: #F8F9FC;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #4A4A6A;
+            line-height: 1.6;
+        }
+
+        .horizon {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .horizon-title {
+            font-weight: 600;
+            color: #6C5CE7;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .horizon-items {
+            margin-top: 12px;
+        }
+
+        .horizon-item {
+            background: #F8F9FC;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #4A4A6A;
+            margin-bottom: 6px;
+        }
+
+        .playbook-card {
+            background: white;
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .playbook-card.automate {
+            border-left-color: #00B894;
+        }
+
+        .playbook-card.augment {
+            border-left-color: #6C5CE7;
+        }
+
+        .playbook-card.transform {
+            border-left-color: #FDCB6E;
+        }
+
+        .playbook-card.preserve {
+            border-left-color: #0984E3;
+        }
+
+        .playbook-title {
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+
+        .playbook-section {
+            margin-bottom: 12px;
+        }
+
+        .playbook-label {
+            font-weight: 600;
+            font-size: 12px;
+            color: #4A4A6A;
+            margin-bottom: 4px;
+        }
+
+        .playbook-content {
+            font-size: 12px;
+            color: #4A4A6A;
+            line-height: 1.6;
+        }
+
+        .benchmark {
+            background: white;
+            border: 1px solid #E0E0E8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .benchmark-title {
+            font-weight: 600;
+            color: #1A1A2E;
+            margin-bottom: 12px;
+        }
+
+        .benchmark-item {
+            font-size: 13px;
+            color: #4A4A6A;
+            margin-bottom: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .indices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quadrants-info {
+                grid-template-columns: 1fr;
+            }
+
+            .time-distribution {
+                grid-template-columns: 1fr;
+            }
+
+            .before-after {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 20px;
+                gap: 20px;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .logo img {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <img src="logo_ak.png" alt="Applied Knowledge" style="width: 180px; height: auto; opacity: 0.9;">
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">PROGRESSO</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="progress-label">ETAPAS</div>
+                <div class="steps-list">
+                    <div class="step-item active" data-step="1">1. Organograma</div>
+                    <div class="step-item" data-step="2">2. Decomposição</div>
+                    <div class="step-item" data-step="3">3. Scoring</div>
+                    <div class="step-item" data-step="4">4. Análises</div>
+                    <div class="step-item" data-step="5">5. Ação</div>
+                    <div class="step-item" data-step="6">6. Benchmark</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <!-- Step 0: Login por email -->
+            <div class="step active" id="step-0">
+                <div style="max-width: 520px; margin: 80px auto; text-align: center;">
+                    <h1 style="margin-bottom: 16px;">Bem-vindo ao WorkDesigner</h1>
+                    <p class="subtitle" style="margin-bottom: 32px;">Digite seu email corporativo para começar ou continuar uma análise.</p>
+
+                    <div class="card" style="text-align: left;">
+                        <div class="form-group">
+                            <label>Email corporativo</label>
+                            <input type="email" id="loginEmail" placeholder="nome@empresa.com" style="padding: 12px; font-size: 14px;">
+                        </div>
+                        <button class="button button-primary" id="loginBtn" onclick="checkLoginEmail()" style="width: 100%; justify-content: center;">Continuar →</button>
+                        <div id="loginStatus" style="margin-top: 16px; font-size: 13px; text-align: center; min-height: 20px;"></div>
+                    </div>
+
+                    <p style="margin-top: 24px; font-size: 12px; color: #4A4A6A;">Se sua empresa já iniciou uma análise, carregaremos os dados anteriores automaticamente.</p>
+                </div>
+            </div>
+
+            <!-- Step 1: Organograma -->
+            <div class="step" id="step-1">
+                <h1>Organograma</h1>
+                <p class="subtitle">Defina sua estrutura organizacional e descreva os cargos. Você pode preencher diretamente abaixo ou <a href="https://docs.google.com/spreadsheets/d/1kT52kBub1NyV15hdM0rHleyvP6FVWH8sytxgTVyc05k/copy" target="_blank" style="color:#6C5CE7;font-weight:600;">baixar o template no Google Sheets</a> e importar depois.</p>
+
+                <div class="card">
+                    <div class="card-title">Informações da Empresa</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome da Empresa</label>
+                            <input type="text" id="companyName" placeholder="Ex: Acme Corp">
+                        </div>
+                        <div class="form-group">
+                            <label>Setor</label>
+                            <select id="companySector" onchange="onSectorChange()">
+                                <option value="">Selecione um setor...</option>
+                                <option value="Tecnologia / SaaS">Tecnologia / SaaS</option>
+                                <option value="Educação">Educação</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Financeiro / Fintech">Financeiro / Fintech</option>
+                                <option value="Varejo / E-commerce">Varejo / E-commerce</option>
+                                <option value="Indústria / Manufatura">Indústria / Manufatura</option>
+                                <option value="Consultoria / Serviços Profissionais">Consultoria / Serviços Profissionais</option>
+                                <option value="Logística / Transporte">Logística / Transporte</option>
+                                <option value="Agronegócio">Agronegócio</option>
+                                <option value="Mídia / Entretenimento">Mídia / Entretenimento</option>
+                                <option value="Energia / Utilities">Energia / Utilities</option>
+                                <option value="Construção / Imobiliário">Construção / Imobiliário</option>
+                                <option value="ONG / Terceiro Setor">ONG / Terceiro Setor</option>
+                                <option value="Governo / Setor Público">Governo / Setor Público</option>
+                                <option value="__outro__">Outro (especificar)</option>
+                            </select>
+                            <input type="text" id="companySectorOther" placeholder="Digite o setor" style="display:none;margin-top:8px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Funcionários</label>
+                            <input type="number" id="employeeCount" placeholder="Ex: 50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="orgTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortOrgTable(0)">Diretoria</th>
+                                <th onclick="sortOrgTable(1)">Área</th>
+                                <th onclick="sortOrgTable(2)">Cargo</th>
+                                <th onclick="sortOrgTable(3)">Qtd</th>
+                                <th onclick="sortOrgTable(4)">Reporta a</th>
+                                <th onclick="sortOrgTable(5)">Responsabilidades</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="orgTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <button class="button button-add" id="addRowBtn">+ Adicionar Cargo</button>
+
+                <div class="button-group">
+                    <div></div>
+                    <button class="button button-primary" id="step1NextBtn">Gerar Tarefas →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Decomposição de Tarefas -->
+            <div class="step" id="step-2">
+                <h1>Avaliação de Tarefas</h1>
+                <p class="subtitle">Para cada tarefa, ajuste os critérios usando os controles deslizantes. Use os rótulos como guia para classificar cada aspecto da tarefa.</p>
+
+                <div class="cargo-filter-bar">
+                    <label for="cargoFilter">Filtrar por Função:</label>
+                    <select id="cargoFilter" onchange="filterByCargo()">
+                        <option value="__all__">Todas as funções</option>
+                    </select>
+                    <span class="cargo-count" id="cargoTaskCount"></span>
+                </div>
+
+                <div id="tasksContainer" class="tasks-container">
+                </div>
+
+                <div class="button-group">
+                    <button class="button button-secondary" id="step2BackBtn">← Voltar</button>
+                    <div class="button-group-right">
+                        <button class="button button-add" onclick="addTaskToCurrentCargo()">+ Adicionar Tarefa</button>
+                        <button class="button button-primary" id="step2NextBtn">Aprovar e Analisar →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Scoring & Classificação -->
+            <div class="step" id="step-3">
+                <h1>Scoring & Classificação</h1>
+                <p class="subtitle">Análise ATOM de automação, aumento, transformação e preservação</p>
+
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Dynamically generated stat cards -->
+                </div>
+
+                <!-- Indices Explanation Section -->
+                <div class="indices-section" id="indicesSection">
+                    <h3>Entendendo os Índices</h3>
+
+                    <div class="indices-grid">
+                        <div class="index-card">
+                            <div class="index-card-title">Automation Score (AS)</div>
+                            <div class="index-card-desc">Mede o quanto uma tarefa pode ser feita por máquinas sem intervenção humana. Tarefas com alto AS são repetitivas, baseadas em dados estruturados, com poucas exceções e pouca necessidade de julgamento humano. Quanto maior o AS, mais a tarefa é candidata à automação completa.</div>
+                        </div>
+
+                        <div class="index-card">
+                            <div class="index-card-title">Augmentation Score (AuS)</div>
+                            <div class="index-card-desc">Mede o quanto uma tarefa se beneficia de ter IA trabalhando JUNTO com o humano. Tarefas com alto AuS exigem raciocínio complexo, interação com pessoas e criatividade — mas podem ser aceleradas com IA gerando rascunhos, analisando dados ou sugerindo opções. O humano continua no controle.</div>
+                        </div>
+
+                        <div class="index-card">
+                            <div class="index-card-title">HARM Score</div>
+                            <div class="index-card-desc">Human Agency Retention Metric. Mede o quanto de agência humana deve ser preservada nesta tarefa. Tarefas com HARM alto são aquelas que envolvem julgamento subjetivo, criatividade, empatia e interação com stakeholders — automatizá-las destruiria valor. É um sinal de alerta: quanto maior o HARM, mais cuidado antes de automatizar.</div>
+                        </div>
+
+                        <div class="index-card">
+                            <div class="index-card-title">DNA</div>
+                            <div class="index-card-desc">Um identificador único hexadecimal que representa o perfil genético da tarefa baseado em seus 8 atributos (Cog, Data, Hum, Stak, Reg, Var, Creat, Temp). Tarefas com DNA similares tendem a ter o mesmo potencial de transformação.</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 24px; margin-bottom: 16px;">Os 4 Quadrantes</h3>
+                    <div class="quadrants-info">
+                        <div class="quadrant-info automate">
+                            <div class="quadrant-info-title">AUTOMATE</div>
+                            <div class="quadrant-info-desc">A máquina faz sozinha. Tarefa repetitiva, dados claros, sem necessidade de julgamento humano. Alto AS, baixo AuS. Implemente automação completa com RPA ou APIs.</div>
+                        </div>
+
+                        <div class="quadrant-info augment">
+                            <div class="quadrant-info-title">AUGMENT</div>
+                            <div class="quadrant-info-desc">IA + Humano juntos. Tarefa complexa que a IA acelera, mas o humano decide. Alto AS e alto AuS. Implemente co-pilotos que geram rascunhos e sugestões.</div>
+                        </div>
+
+                        <div class="quadrant-info transform">
+                            <div class="quadrant-info-title">TRANSFORM</div>
+                            <div class="quadrant-info-desc">Repensar a função. Tarefa muito humana que precisa ser redesenhada para o mundo com IA. Baixo AS, alto AuS. Reconsidere o propósito e crie novas formas de contribuição.</div>
+                        </div>
+
+                        <div class="quadrant-info preserve">
+                            <div class="quadrant-info-title">PRESERVE</div>
+                            <div class="quadrant-info-desc">Proteger e valorizar. Tarefa essencialmente humana que não deve ser tocada por IA. Baixo AS, baixo AuS. Invista em desenvolvimento humano nesta competência.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scatter-container">
+                    <div class="scatter-plot" id="scatterPlot">
+                        <div class="scatter-divider horizontal"></div>
+                        <div class="scatter-divider vertical"></div>
+                    </div>
+                    <div class="scatter-labels">
+                        <span>← Baixa Automação | Alta Automação →</span>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0)" style="font-size:10px;">ID</th>
+                                <th onclick="sortTable(1)">Cargo</th>
+                                <th onclick="sortTable(2)">Tarefa</th>
+                                <th onclick="sortTable(3)">Cog</th>
+                                <th onclick="sortTable(4)">Data</th>
+                                <th onclick="sortTable(5)">Hum</th>
+                                <th onclick="sortTable(6)">Stak</th>
+                                <th onclick="sortTable(7)">Reg</th>
+                                <th onclick="sortTable(8)">Var</th>
+                                <th onclick="sortTable(9)">Creat</th>
+                                <th onclick="sortTable(10)">Temp</th>
+                                <th onclick="sortTable(11)">AS</th>
+                                <th onclick="sortTable(12)">AuS</th>
+                                <th onclick="sortTable(13)">HARM</th>
+                                <th onclick="sortTable(14)">DNA</th>
+                                <th onclick="sortTable(15)">Quadrante</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="button-group">
+                    <button class="button button-secondary" id="step3BackBtn">← Voltar</button>
+                    <button class="button button-primary" id="step3NextBtn">Ver Análises →</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Análises por Cluster -->
+            <div class="step" id="step-4">
+                <h1>Análises por Cluster</h1>
+                <p class="subtitle">Entenda o potencial de transformação por cargo, área e diretoria</p>
+
+                <!-- 4a. Análise por Cargo -->
+                <div class="analytics-section">
+                    <h2>Análise por Cargo</h2>
+                    <div id="roleAnalysisContainer">
+                        <!-- Dynamically generated role cards -->
+                    </div>
+                </div>
+
+                <!-- 4b. Análise por Vertical/Área -->
+                <div class="analytics-section">
+                    <h2>Análise por Área</h2>
+                    <div id="areaAnalysisContainer">
+                        <!-- Dynamically generated area cards -->
+                    </div>
+                </div>
+
+                <!-- 4c. Análise por Diretoria -->
+                <div class="analytics-section">
+                    <h2>Análise por Diretoria</h2>
+                    <div id="directorateAnalysisContainer">
+                        <!-- Dynamically generated directorate cards -->
+                    </div>
+                </div>
+
+                <!-- 4d. Visão Organizacional -->
+                <div class="analytics-section">
+                    <h2>Visão Organizacional</h2>
+                    <div id="organizationAnalysisContainer">
+                        <!-- Dynamically generated organization analysis -->
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="button button-secondary" id="step4BackBtn">← Voltar</button>
+                    <button class="button button-primary" id="step4NextBtn">Ver Plano de Ação →</button>
+                </div>
+            </div>
+
+            <!-- Step 5: Plano de Ação & Playbooks -->
+            <div class="step" id="step-5">
+                <h1>Plano de Ação & Playbooks</h1>
+                <p class="subtitle">Seu roteiro customizado para implementação</p>
+
+                <div class="executive-summary" id="executiveSummary">
+                    <!-- Dynamically generated -->
+                </div>
+
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Quick Wins</h2>
+                <div class="quick-wins" id="quickWins">
+                    <!-- Dynamically generated -->
+                </div>
+
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Plano 3 Horizontes</h2>
+                <div class="horizons" id="horizons">
+                    <!-- Dynamically generated -->
+                </div>
+
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Playbooks</h2>
+                <div class="playbook-cards" id="playbookCards">
+                    <!-- Dynamically generated -->
+                </div>
+
+                <div class="benchmark" id="benchmark">
+                    <!-- Dynamically generated -->
+                </div>
+
+                <div class="button-group">
+                    <button class="button button-secondary" id="step5BackBtn">← Voltar</button>
+                    <div class="button-group-right">
+                        <button class="button button-secondary" onclick="exportCSV()">Exportar CSV</button>
+                        <button class="button button-secondary" onclick="saveToSheets()">Salvar no Google Sheets</button>
+                        <button class="button button-primary" onclick="goToStep(6); renderBenchmark();">Ver Benchmark →</button>
+                        <button class="button button-secondary" id="restartBtn">Recomeçar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Benchmarking cross-empresa -->
+            <div class="step" id="step-6">
+                <h1>Benchmarking</h1>
+                <p class="subtitle">Compare o shape da sua empresa com o padrão da base consolidada. Filtre por diretoria, área ou cargo para cortes específicos.</p>
+
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-title">Filtros</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Diretoria</label>
+                            <select id="bmFilterDiretoria" onchange="renderBenchmark()">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Área / Vertical</label>
+                            <select id="bmFilterArea" onchange="renderBenchmark()">
+                                <option value="">Todas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cargo / Função</label>
+                            <select id="bmFilterCargo" onchange="renderBenchmark()">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="bmStatus" style="font-size:12px;color:#4A4A6A;margin-top:8px;"></div>
+                </div>
+
+                <div class="card" id="bmComparisonCard">
+                    <div class="card-title">Sua empresa vs Benchmark</div>
+                    <div id="bmComparison" style="margin-top:16px;">Carregando...</div>
+                </div>
+
+                <div class="card" style="margin-top:24px;">
+                    <div class="card-title">Distribuição por Quadrante</div>
+                    <div id="bmQuadrantBars" style="margin-top:16px;"></div>
+                </div>
+
+                <div class="card" style="margin-top:24px;">
+                    <div class="card-title">Tarefas mais comuns no filtro</div>
+                    <div id="bmCommonTasks" style="margin-top:16px;"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="button button-secondary" onclick="goToStep(5)">← Voltar</button>
+                    <button class="button button-primary" onclick="goToStep(1)">Nova Análise</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ID Generation Functions
+        function generateId(prefix) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let id = prefix + '-';
+            for (let i = 0; i < 8; i++) id += chars.charAt(Math.floor(Math.random() * chars.length));
+            return id;
+        }
+
+        function generateTaskId(empresaId, seq) {
+            const shortId = empresaId.replace('EMP-', '').substring(0, 6);
+            return 'TSK-' + shortId + '-' + String(seq).padStart(4, '0');
+        }
+
+        // Global state
+        let appState = {
+            empresaId: generateId('EMP'),
+            currentStep: 0,
+            userEmail: '',
+            companyInfo: {},
+            orgChart: [],
+            tasks: [],
+            results: []
+        };
+
+        // Mock endpoints (TODO: Replace with Google Apps Script endpoint)
+        const ENDPOINTS = {
+            saveOrg: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=saveOrg',
+            generateTasks: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=generateTasks',
+            saveTasks: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=saveTasks',
+            saveResults: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=saveResults'
+        };
+
+        // Demo data
+        const DEMO_ORG_DATA = [
+    {dir: 'Administração', area: 'Presidência', cargo: 'Presidente e Equipe', qtd: 3, reporta: 'Board', resp: 'Planejar estratégia anual, gerir relações com board, apresentar resultados'},
+    {dir: 'Administração', area: 'Produtos Digitais', cargo: 'Equipe de Desenvolvimento', qtd: 12, reporta: 'Maira Habimorad', resp: 'Desenvolver features, code review, testes, deploy, infraestrutura cloud, UI/UX'},
+    {dir: 'Administração', area: 'Infraestrutura e Facilities', cargo: 'Equipe de Facilities', qtd: 7, reporta: 'Maira Habimorad', resp: 'Manutenção predial, fornecedores, inventário, segurança, eventos, recepção'},
+    {dir: 'Administração', area: 'Segurança e Operações de TI', cargo: 'Equipe de SecOps', qtd: 6, reporta: 'Maira Habimorad', resp: 'Segurança de rede, IAM, incidentes, patches, backup, auditoria, suporte'},
+    {dir: 'Administração', area: 'Financeiro', cargo: 'Equipe Financeira', qtd: 3, reporta: 'Maira Habimorad', resp: 'Contas a pagar/receber, conciliação, DRE, orçamento, NFs, auditoria, fluxo de caixa'},
+    {dir: 'Administração', area: 'Dados e Projetos', cargo: 'Equipe de Dados', qtd: 2, reporta: 'Maira Habimorad', resp: 'ETL, dashboards, PMO, governança, analytics, BI, LGPD'},
+    {dir: 'Administração', area: 'Jurídico', cargo: 'Assessor Jurídico', qtd: 1, reporta: 'Maira Habimorad', resp: 'Contratos, compliance MEC, pesquisa jurídica, litígios, LGPD, trabalhista'},
+    {dir: 'Acadêmico', area: 'Docentes', cargo: 'Corpo Docente', qtd: 45, reporta: 'Flávia Santoro', resp: 'Orientar PBL, avaliar entregas, material, instruções, feedback, pesquisa, mentoria'},
+    {dir: 'Acadêmico', area: 'Coordenação Acadêmica', cargo: 'Coordenadores', qtd: 5, reporta: 'Flávia Santoro', resp: 'Grades curriculares, alocação, qualidade pedagógica, MEC, recursos, metaprojetos'},
+    {dir: 'Acadêmico', area: 'Secretaria Acadêmica', cargo: 'Equipe Secretaria', qtd: 3, reporta: 'Flávia Santoro', resp: 'Matrículas, registros, históricos, horários, MEC, notas, certificados'},
+    {dir: 'Acadêmico', area: 'Suporte Acadêmico', cargo: 'Equipe de Suporte', qtd: 3, reporta: 'Flávia Santoro', resp: 'Suporte aprendizagem, acessibilidade, monitorias, performance, necessidades especiais'},
+    {dir: 'Acadêmico', area: 'Escritório de Projetos', cargo: 'Equipe PMO', qtd: 2, reporta: 'Flávia Santoro', resp: 'Parceiros de projeto, sprints, qualidade, indústria, portfólio, riscos'},
+    {dir: 'Comunidade e Cultura', area: 'Gente e Gestão', cargo: 'Equipe de RH', qtd: 3, reporta: 'Lucas Niemeyer', resp: 'Onboarding, BP, folha, recrutamento, clima, analytics, cultura, avaliação'},
+    {dir: 'Comunidade e Cultura', area: 'Sucesso do Aluno', cargo: 'Equipe Student Success', qtd: 8, reporta: 'Lucas Niemeyer', resp: 'Alunos em risco, mentoria, retenção, conflitos, NPS, saúde mental, alumni'},
+    {dir: 'Comunidade e Cultura', area: 'Relações Internacionais', cargo: 'Equipe Internacional', qtd: 2, reporta: 'Lucas Niemeyer', resp: 'Intercâmbio, parcerias, vistos, eventos culturais, bolsas, recrutamento intl'},
+    {dir: 'Growth', area: 'Admissões', cargo: 'Equipe de Admissões', qtd: 3, reporta: 'Ana Beatriz Garcia', resp: 'Pipeline leads, applications, entrevistas, eventos seleção, conversão, funil'},
+    {dir: 'Growth', area: 'Marketing', cargo: 'Equipe de Marketing', qtd: 7, reporta: 'Ana Beatriz Garcia', resp: 'Redes sociais, mídia paga, métricas, design, eventos, PR, estratégia conteúdo'},
+    {dir: 'Growth', area: 'Novos Produtos', cargo: 'Equipe de Novos Produtos', qtd: 8, reporta: 'Ana Beatriz Garcia', resp: 'Pesquisa mercado, prototipação, validação, prospecção, piloto, roadmap'},
+    {dir: 'Inovação', area: 'Pesquisa Aplicada', cargo: 'Pesquisadores', qtd: 8, reporta: 'Sandra Martins', resp: 'Pesquisas exploratórias, papers, projetos inovação, prototipação, grants'},
+    {dir: 'Inovação', area: 'Parcerias e Transferência', cargo: 'Equipe de Parcerias', qtd: 5, reporta: 'Sandra Martins', resp: 'Oportunidades parceria, contratos tech, portfólio inovação, PI'},
+    {dir: 'Inovação', area: 'Inovação Aberta', cargo: 'Equipe Open Innovation', qtd: 3, reporta: 'Sandra Martins', resp: 'Hackathons, comunidade makers, incubação de startups'}
+]
+
+        const DEMO_TASKS_BY_ROLE = {
+    'Presidente e Equipe': [
+        {tarefa: 'Planejar estratégia anual', cog:5, data:4, hum:4, stak:5, reg:2, var:4, creat:4, temp:2},
+        {tarefa: 'Gerir relações com board', cog:5, data:3, hum:5, stak:5, reg:2, var:3, creat:3, temp:1},
+        {tarefa: 'Apresentar resultados', cog:4, data:5, hum:4, stak:4, reg:2, var:2, creat:3, temp:3}
+    ],
+    'Equipe de Desenvolvimento': [
+        {tarefa: 'Desenvolver features em sprints ágeis', cog:5, data:3, hum:2, stak:3, reg:1, var:4, creat:5, temp:4},
+        {tarefa: 'Revisar código (code review)', cog:5, data:2, hum:4, stak:3, reg:1, var:3, creat:3, temp:3},
+        {tarefa: 'Escrever testes automatizados', cog:4, data:3, hum:1, stak:1, reg:1, var:2, creat:2, temp:2},
+        {tarefa: 'Participar de cerimônias Scrum', cog:3, data:1, hum:3, stak:4, reg:1, var:2, creat:2, temp:4},
+        {tarefa: 'Documentar APIs e arquitetura', cog:4, data:3, hum:1, stak:2, reg:1, var:2, creat:3, temp:2},
+        {tarefa: 'Realizar deploy e monitorar produção', cog:3, data:4, hum:2, stak:2, reg:2, var:3, creat:1, temp:5},
+        {tarefa: 'Investigar e resolver bugs críticos', cog:5, data:4, hum:3, stak:3, reg:1, var:5, creat:4, temp:5},
+        {tarefa: 'Manter infraestrutura cloud', cog:4, data:4, hum:1, stak:1, reg:2, var:2, creat:1, temp:3},
+        {tarefa: 'Design de UI/UX e prototipação', cog:4, data:2, hum:3, stak:4, reg:1, var:4, creat:5, temp:2},
+        {tarefa: 'Estimar e planejar sprints', cog:4, data:3, hum:4, stak:4, reg:1, var:3, creat:2, temp:4},
+        {tarefa: 'Onboarding de novos desenvolvedores', cog:3, data:2, hum:4, stak:3, reg:1, var:3, creat:2, temp:2},
+        {tarefa: 'Gestão de dívida técnica', cog:5, data:3, hum:4, stak:3, reg:1, var:3, creat:4, temp:1}
+    ],
+    'Equipe de Facilities': [
+        {tarefa: 'Gerenciar manutenção predial', cog:3, data:3, hum:2, stak:3, reg:4, var:4, creat:1, temp:4},
+        {tarefa: 'Administrar contratos fornecedores', cog:3, data:4, hum:3, stak:4, reg:4, var:2, creat:1, temp:3},
+        {tarefa: 'Controlar inventário e patrimônio', cog:2, data:5, hum:1, stak:1, reg:3, var:1, creat:1, temp:2},
+        {tarefa: 'Planejar e organizar espaços', cog:3, data:2, hum:3, stak:4, reg:2, var:3, creat:3, temp:2},
+        {tarefa: 'Garantir conformidade segurança', cog:3, data:3, hum:2, stak:2, reg:5, var:2, creat:1, temp:4},
+        {tarefa: 'Logística de eventos e montagem', cog:2, data:2, hum:2, stak:4, reg:1, var:4, creat:2, temp:5},
+        {tarefa: 'Recepção e controle de acesso', cog:1, data:3, hum:2, stak:3, reg:2, var:2, creat:1, temp:4},
+        {tarefa: 'Gestão de utilidades', cog:2, data:4, hum:1, stak:2, reg:3, var:2, creat:1, temp:3},
+        {tarefa: 'Coordenar projetos reforma/expansão', cog:4, data:3, hum:3, stak:5, reg:4, var:4, creat:3, temp:3},
+        {tarefa: 'Processar pedidos compras', cog:2, data:4, hum:1, stak:2, reg:3, var:2, creat:1, temp:3}
+    ],
+    'Equipe de SecOps': [
+        {tarefa: 'Monitorar segurança rede/endpoints', cog:4, data:5, hum:2, stak:1, reg:4, var:3, creat:1, temp:5},
+        {tarefa: 'Gerenciar controle de acesso (IAM)', cog:3, data:4, hum:2, stak:2, reg:4, var:2, creat:1, temp:3},
+        {tarefa: 'Responder incidentes de segurança', cog:5, data:4, hum:4, stak:4, reg:5, var:5, creat:3, temp:5},
+        {tarefa: 'Gerenciar patches e atualizações', cog:3, data:4, hum:1, stak:1, reg:3, var:2, creat:1, temp:4},
+        {tarefa: 'Executar procedimentos de backup', cog:2, data:5, hum:1, stak:1, reg:4, var:1, creat:1, temp:4},
+        {tarefa: 'Conduzir auditorias de segurança', cog:4, data:4, hum:3, stak:3, reg:5, var:2, creat:2, temp:2},
+        {tarefa: 'Administrar regras firewall/proxy', cog:4, data:4, hum:2, stak:1, reg:4, var:2, creat:1, temp:3},
+        {tarefa: 'Atender tickets suporte técnico', cog:3, data:3, hum:3, stak:3, reg:1, var:4, creat:2, temp:4},
+        {tarefa: 'Planejar disaster recovery', cog:5, data:4, hum:3, stak:3, reg:5, var:3, creat:3, temp:2},
+        {tarefa: 'Documentar políticas segurança', cog:4, data:3, hum:2, stak:2, reg:5, var:2, creat:2, temp:1}
+    ],
+    'Equipe Financeira': [
+        {tarefa: 'Processar contas a pagar/receber', cog:2, data:5, hum:1, stak:2, reg:4, var:1, creat:1, temp:4},
+        {tarefa: 'Conciliar extratos bancários', cog:2, data:5, hum:1, stak:1, reg:4, var:1, creat:1, temp:3},
+        {tarefa: 'Elaborar relatórios financeiros', cog:4, data:5, hum:2, stak:3, reg:3, var:2, creat:2, temp:4},
+        {tarefa: 'Apoiar planejamento orçamentário', cog:4, data:4, hum:3, stak:4, reg:3, var:3, creat:3, temp:2},
+        {tarefa: 'Emitir NFs e controlar tributos', cog:2, data:5, hum:1, stak:1, reg:5, var:1, creat:1, temp:5},
+        {tarefa: 'Preparar doc para auditoria', cog:3, data:5, hum:2, stak:3, reg:5, var:2, creat:1, temp:3},
+        {tarefa: 'Analisar variações orçamentárias', cog:4, data:5, hum:3, stak:3, reg:2, var:3, creat:3, temp:2},
+        {tarefa: 'Gerenciar fluxo de caixa', cog:3, data:5, hum:2, stak:2, reg:3, var:2, creat:1, temp:4},
+        {tarefa: 'Processar reembolsos', cog:1, data:4, hum:1, stak:2, reg:3, var:1, creat:1, temp:3},
+        {tarefa: 'Gerar DRE e balanço patrimonial', cog:4, data:5, hum:2, stak:3, reg:5, var:1, creat:1, temp:4}
+    ],
+    'Equipe de Dados': [
+        {tarefa: 'Manter pipelines de dados (ETL)', cog:4, data:5, hum:1, stak:1, reg:2, var:2, creat:2, temp:3},
+        {tarefa: 'Construir dashboards e relatórios', cog:4, data:5, hum:2, stak:3, reg:1, var:3, creat:4, temp:3},
+        {tarefa: 'Acompanhar projetos estratégicos (PMO)', cog:4, data:3, hum:3, stak:4, reg:2, var:3, creat:2, temp:3},
+        {tarefa: 'Garantir qualidade/governança de dados', cog:4, data:5, hum:2, stak:2, reg:3, var:2, creat:1, temp:2},
+        {tarefa: 'Atender requisições analytics ad-hoc', cog:4, data:5, hum:2, stak:3, reg:1, var:4, creat:3, temp:4},
+        {tarefa: 'Otimizar performance de bancos', cog:5, data:5, hum:1, stak:1, reg:1, var:2, creat:2, temp:3},
+        {tarefa: 'Administrar ferramentas BI', cog:3, data:4, hum:1, stak:2, reg:1, var:2, creat:1, temp:2},
+        {tarefa: 'Implementar políticas LGPD em dados', cog:4, data:4, hum:3, stak:3, reg:5, var:2, creat:2, temp:2}
+    ],
+    'Assessor Jurídico': [
+        {tarefa: 'Revisar e redigir contratos', cog:5, data:3, hum:5, stak:4, reg:5, var:3, creat:3, temp:3},
+        {tarefa: 'Acompanhar compliance MEC', cog:4, data:4, hum:3, stak:3, reg:5, var:2, creat:1, temp:2},
+        {tarefa: 'Conduzir pesquisa jurídica', cog:5, data:4, hum:4, stak:1, reg:5, var:3, creat:2, temp:2},
+        {tarefa: 'Gerenciar disputas e litígios', cog:5, data:3, hum:5, stak:5, reg:5, var:5, creat:3, temp:4},
+        {tarefa: 'Redigir políticas internas', cog:4, data:2, hum:4, stak:3, reg:5, var:2, creat:4, temp:2},
+        {tarefa: 'Garantir conformidade LGPD', cog:4, data:4, hum:3, stak:3, reg:5, var:2, creat:2, temp:3},
+        {tarefa: 'Analisar contratos fornecedores', cog:4, data:3, hum:4, stak:3, reg:4, var:2, creat:2, temp:3},
+        {tarefa: 'Assessorar direito trabalhista', cog:5, data:3, hum:5, stak:4, reg:5, var:4, creat:2, temp:4}
+    ],
+    'Corpo Docente': [
+        {tarefa: 'Orientar grupos de projeto (PBL)', cog:5, data:2, hum:5, stak:5, reg:2, var:5, creat:5, temp:3},
+        {tarefa: 'Avaliar entregas e artefatos', cog:5, data:3, hum:4, stak:3, reg:3, var:3, creat:3, temp:4},
+        {tarefa: 'Preparar material de autoestudo', cog:5, data:3, hum:2, stak:1, reg:2, var:3, creat:5, temp:2},
+        {tarefa: 'Conduzir instruções presenciais', cog:5, data:2, hum:4, stak:4, reg:2, var:3, creat:4, temp:4},
+        {tarefa: 'Dar feedback formativo individual', cog:5, data:2, hum:5, stak:4, reg:2, var:4, creat:3, temp:3},
+        {tarefa: 'Participar de reuniões alinhamento', cog:3, data:1, hum:3, stak:4, reg:1, var:2, creat:1, temp:3},
+        {tarefa: 'Atualizar grade curricular', cog:5, data:3, hum:3, stak:3, reg:3, var:3, creat:5, temp:1},
+        {tarefa: 'Pesquisar e publicar artigos', cog:5, data:4, hum:2, stak:2, reg:2, var:4, creat:5, temp:1},
+        {tarefa: 'Mentorar projetos de pesquisa', cog:5, data:2, hum:5, stak:3, reg:2, var:4, creat:4, temp:2},
+        {tarefa: 'Elaborar e corrigir provas', cog:4, data:3, hum:3, stak:1, reg:3, var:2, creat:4, temp:4}
+    ],
+    'Coordenadores': [
+        {tarefa: 'Planejar grades curriculares', cog:5, data:3, hum:4, stak:4, reg:4, var:2, creat:4, temp:1},
+        {tarefa: 'Coordenar alocação de professores', cog:3, data:4, hum:3, stak:4, reg:2, var:3, creat:1, temp:3},
+        {tarefa: 'Garantir qualidade pedagógica', cog:5, data:3, hum:5, stak:4, reg:3, var:3, creat:3, temp:2},
+        {tarefa: 'Apoiar processos acreditação MEC', cog:4, data:5, hum:3, stak:4, reg:5, var:2, creat:1, temp:2},
+        {tarefa: 'Mediar recursos e apelações', cog:4, data:3, hum:5, stak:5, reg:4, var:4, creat:2, temp:4},
+        {tarefa: 'Garantir alinhamento cross-módulo', cog:4, data:2, hum:3, stak:4, reg:2, var:3, creat:3, temp:2},
+        {tarefa: 'Supervisionar metaprojetos', cog:4, data:3, hum:4, stak:5, reg:2, var:3, creat:3, temp:3},
+        {tarefa: 'Analisar indicadores aprendizagem', cog:4, data:5, hum:3, stak:3, reg:2, var:2, creat:2, temp:2}
+    ],
+    'Equipe Secretaria': [
+        {tarefa: 'Gerenciar matrículas', cog:2, data:5, hum:1, stak:3, reg:5, var:2, creat:1, temp:5},
+        {tarefa: 'Manter registros acadêmicos', cog:1, data:5, hum:1, stak:1, reg:4, var:1, creat:1, temp:3},
+        {tarefa: 'Emitir históricos e declarações', cog:1, data:5, hum:1, stak:2, reg:4, var:1, creat:1, temp:3},
+        {tarefa: 'Coordenar horários e salas', cog:3, data:4, hum:2, stak:3, reg:2, var:3, creat:2, temp:4},
+        {tarefa: 'Reportar ao MEC (Censo, ENADE)', cog:3, data:5, hum:2, stak:2, reg:5, var:1, creat:1, temp:5},
+        {tarefa: 'Processar notas e frequências', cog:1, data:5, hum:1, stak:2, reg:4, var:1, creat:1, temp:4},
+        {tarefa: 'Certificar documentos acadêmicos', cog:2, data:4, hum:2, stak:2, reg:5, var:1, creat:1, temp:3},
+        {tarefa: 'Processar transferências', cog:3, data:4, hum:3, stak:3, reg:5, var:3, creat:1, temp:3}
+    ],
+    'Equipe de Suporte': [
+        {tarefa: 'Oferecer suporte de aprendizagem', cog:4, data:2, hum:4, stak:4, reg:2, var:4, creat:3, temp:3},
+        {tarefa: 'Coordenar acessibilidade/inclusão', cog:4, data:3, hum:4, stak:4, reg:4, var:3, creat:3, temp:2},
+        {tarefa: 'Organizar monitorias', cog:3, data:3, hum:3, stak:3, reg:1, var:3, creat:2, temp:3},
+        {tarefa: 'Gerenciar recursos aprendizagem', cog:2, data:4, hum:1, stak:2, reg:1, var:2, creat:1, temp:2},
+        {tarefa: 'Rastrear performance individual', cog:3, data:5, hum:2, stak:3, reg:2, var:2, creat:1, temp:3},
+        {tarefa: 'Apoiar alunos necessidades especiais', cog:4, data:2, hum:5, stak:4, reg:4, var:4, creat:3, temp:4}
+    ],
+    'Equipe PMO': [
+        {tarefa: 'Gerenciar parceiros de projeto', cog:4, data:3, hum:4, stak:5, reg:2, var:3, creat:3, temp:3},
+        {tarefa: 'Coordenar sprints entre ateliês', cog:3, data:3, hum:3, stak:4, reg:1, var:3, creat:2, temp:4},
+        {tarefa: 'Definir critérios de qualidade', cog:4, data:3, hum:4, stak:3, reg:3, var:2, creat:3, temp:2},
+        {tarefa: 'Manter contatos com indústria', cog:3, data:2, hum:4, stak:5, reg:1, var:3, creat:2, temp:2},
+        {tarefa: 'Gerenciar portfólio de projetos', cog:4, data:4, hum:3, stak:4, reg:2, var:3, creat:2, temp:3},
+        {tarefa: 'Monitorar riscos e entregas', cog:4, data:4, hum:3, stak:3, reg:2, var:3, creat:1, temp:4}
+    ],
+    'Equipe de RH': [
+        {tarefa: 'Conduzir onboarding 30-60-90', cog:3, data:2, hum:4, stak:4, reg:3, var:3, creat:3, temp:4},
+        {tarefa: 'Facilitar conversas de BP', cog:4, data:2, hum:5, stak:5, reg:2, var:4, creat:3, temp:3},
+        {tarefa: 'Processar folha e benefícios', cog:2, data:5, hum:1, stak:1, reg:5, var:1, creat:1, temp:5},
+        {tarefa: 'Triagem inicial de currículos', cog:3, data:4, hum:3, stak:2, reg:2, var:2, creat:1, temp:3},
+        {tarefa: 'Organizar treinamentos', cog:3, data:3, hum:2, stak:3, reg:2, var:3, creat:2, temp:3},
+        {tarefa: 'Monitorar clima e engajamento', cog:4, data:5, hum:3, stak:3, reg:1, var:2, creat:2, temp:2},
+        {tarefa: 'People analytics e turnover', cog:3, data:5, hum:1, stak:2, reg:1, var:1, creat:2, temp:2},
+        {tarefa: 'Apoiar seleção e entrevistas', cog:4, data:2, hum:5, stak:4, reg:3, var:4, creat:3, temp:4},
+        {tarefa: 'Manter registros colaboradores', cog:1, data:5, hum:1, stak:1, reg:4, var:1, creat:1, temp:2},
+        {tarefa: 'Pesquisa eNPS e satisfação', cog:3, data:4, hum:2, stak:3, reg:1, var:2, creat:2, temp:3},
+        {tarefa: 'Mapear competências', cog:4, data:4, hum:3, stak:3, reg:1, var:3, creat:3, temp:1},
+        {tarefa: 'Offboarding e exit interviews', cog:3, data:3, hum:4, stak:3, reg:3, var:3, creat:1, temp:3},
+        {tarefa: 'Guardiã da cultura', cog:5, data:1, hum:5, stak:5, reg:1, var:5, creat:5, temp:1},
+        {tarefa: 'Avaliação de desempenho', cog:4, data:4, hum:4, stak:4, reg:2, var:2, creat:2, temp:3},
+        {tarefa: 'Legislação/compliance trabalhista', cog:3, data:3, hum:2, stak:1, reg:5, var:2, creat:1, temp:2}
+    ],
+    'Equipe Student Success': [
+        {tarefa: 'Acompanhar alunos em risco', cog:5, data:3, hum:5, stak:5, reg:3, var:5, creat:3, temp:5},
+        {tarefa: 'Programa mentoria e acolhimento', cog:4, data:2, hum:4, stak:4, reg:2, var:3, creat:4, temp:3},
+        {tarefa: 'Retenção e evasão', cog:4, data:5, hum:2, stak:3, reg:1, var:2, creat:2, temp:2},
+        {tarefa: 'Gerenciar equipe', cog:4, data:2, hum:4, stak:4, reg:2, var:4, creat:2, temp:3},
+        {tarefa: 'Eventos integração e cultura', cog:3, data:1, hum:3, stak:4, reg:1, var:4, creat:5, temp:3},
+        {tarefa: 'Mediar conflitos', cog:5, data:1, hum:5, stak:5, reg:4, var:5, creat:3, temp:5},
+        {tarefa: 'Relatórios NPS', cog:3, data:5, hum:1, stak:2, reg:1, var:1, creat:1, temp:3},
+        {tarefa: 'Sistemas acadêmicos', cog:1, data:5, hum:1, stak:1, reg:3, var:1, creat:1, temp:3},
+        {tarefa: 'Suporte saúde mental', cog:5, data:2, hum:5, stak:4, reg:4, var:5, creat:2, temp:5},
+        {tarefa: 'Engajar alumni', cog:3, data:4, hum:3, stak:3, reg:1, var:3, creat:3, temp:1}
+    ],
+    'Equipe Internacional': [
+        {tarefa: 'Programas intercâmbio', cog:4, data:3, hum:4, stak:5, reg:4, var:3, creat:3, temp:3},
+        {tarefa: 'Parcerias internacionais', cog:4, data:2, hum:4, stak:5, reg:3, var:3, creat:3, temp:2},
+        {tarefa: 'Suporte visto e imigração', cog:3, data:4, hum:3, stak:3, reg:5, var:3, creat:1, temp:4},
+        {tarefa: 'Eventos culturais', cog:3, data:1, hum:3, stak:4, reg:1, var:4, creat:4, temp:3},
+        {tarefa: 'Bolsas internacionais', cog:3, data:4, hum:3, stak:4, reg:4, var:2, creat:1, temp:3},
+        {tarefa: 'Recrutar alunos internacionais', cog:4, data:3, hum:4, stak:5, reg:3, var:3, creat:3, temp:2}
+    ],
+    'Equipe de Admissões': [
+        {tarefa: 'Pipeline de leads', cog:3, data:5, hum:2, stak:3, reg:2, var:3, creat:2, temp:4},
+        {tarefa: 'Processar applications', cog:3, data:4, hum:3, stak:2, reg:3, var:2, creat:1, temp:4},
+        {tarefa: 'Entrevistas candidatos', cog:4, data:2, hum:5, stak:4, reg:2, var:4, creat:2, temp:4},
+        {tarefa: 'Eventos de seleção', cog:3, data:2, hum:3, stak:4, reg:2, var:3, creat:3, temp:4},
+        {tarefa: 'Converter matriculados', cog:4, data:4, hum:4, stak:4, reg:2, var:3, creat:3, temp:4},
+        {tarefa: 'Bolsas e financiamentos', cog:3, data:5, hum:3, stak:3, reg:4, var:2, creat:1, temp:3},
+        {tarefa: 'Métricas de funil', cog:4, data:5, hum:2, stak:3, reg:1, var:2, creat:2, temp:2},
+        {tarefa: 'Visitas campus', cog:2, data:2, hum:3, stak:4, reg:1, var:3, creat:2, temp:3}
+    ],
+    'Equipe de Marketing': [
+        {tarefa: 'Conteúdo redes sociais', cog:4, data:2, hum:3, stak:3, reg:1, var:4, creat:5, temp:4},
+        {tarefa: 'Campanhas mídia paga', cog:3, data:5, hum:2, stak:2, reg:2, var:3, creat:2, temp:3},
+        {tarefa: 'Métricas performance digital', cog:4, data:5, hum:2, stak:2, reg:1, var:2, creat:1, temp:3},
+        {tarefa: 'Materiais gráficos e vídeos', cog:4, data:1, hum:3, stak:3, reg:1, var:4, creat:5, temp:3},
+        {tarefa: 'Eventos institucionais', cog:3, data:2, hum:3, stak:5, reg:2, var:4, creat:4, temp:4},
+        {tarefa: 'Monitorar reputação', cog:3, data:4, hum:3, stak:2, reg:1, var:3, creat:2, temp:4},
+        {tarefa: 'Relatórios ROI marketing', cog:4, data:5, hum:1, stak:3, reg:1, var:2, creat:1, temp:3},
+        {tarefa: 'Agências e parceiros', cog:3, data:1, hum:4, stak:5, reg:2, var:4, creat:2, temp:3},
+        {tarefa: 'Estratégia conteúdo', cog:5, data:3, hum:4, stak:3, reg:1, var:3, creat:5, temp:2},
+        {tarefa: 'Relações imprensa (PR)', cog:4, data:1, hum:4, stak:5, reg:2, var:4, creat:3, temp:4}
+    ],
+    'Equipe de Novos Produtos': [
+        {tarefa: 'Pesquisa mercado', cog:5, data:4, hum:3, stak:3, reg:1, var:4, creat:4, temp:2},
+        {tarefa: 'Prototipar e validar', cog:5, data:3, hum:4, stak:4, reg:3, var:5, creat:5, temp:3},
+        {tarefa: 'Validar modelos negócio', cog:5, data:4, hum:4, stak:4, reg:2, var:4, creat:4, temp:2},
+        {tarefa: 'Prospectar clientes corp', cog:4, data:3, hum:5, stak:5, reg:2, var:4, creat:3, temp:4},
+        {tarefa: 'Pilotar programas', cog:4, data:3, hum:4, stak:5, reg:3, var:5, creat:4, temp:4},
+        {tarefa: 'Precificação e comercial', cog:4, data:4, hum:4, stak:4, reg:2, var:3, creat:3, temp:2},
+        {tarefa: 'Integração com educação', cog:4, data:3, hum:3, stak:3, reg:3, var:3, creat:3, temp:2},
+        {tarefa: 'Roadmap produto', cog:5, data:2, hum:4, stak:5, reg:1, var:4, creat:5, temp:2},
+        {tarefa: 'Analizar concorrência', cog:4, data:4, hum:2, stak:3, reg:1, var:3, creat:2, temp:3},
+        {tarefa: 'User testing e feedback', cog:4, data:3, hum:4, stak:3, reg:1, var:4, creat:3, temp:4}
+    ],
+    'Pesquisadores': [
+        {tarefa: 'Conduzir pesquisas exploratórias', cog:5, data:4, hum:3, stak:3, reg:2, var:4, creat:5, temp:2},
+        {tarefa: 'Publicar papers e resultados', cog:5, data:4, hum:2, stak:2, reg:2, var:3, creat:5, temp:1},
+        {tarefa: 'Gestão projetos de inovação', cog:4, data:3, hum:3, stak:4, reg:2, var:4, creat:4, temp:3},
+        {tarefa: 'Colaborar com academia', cog:4, data:3, hum:4, stak:4, reg:3, var:3, creat:4, temp:2},
+        {tarefa: 'Prototipar soluções inovadoras', cog:5, data:3, hum:3, stak:4, reg:1, var:5, creat:5, temp:3},
+        {tarefa: 'Escrever grant proposals', cog:4, data:4, hum:2, stak:3, reg:3, var:2, creat:4, temp:1},
+        {tarefa: 'Lab administration', cog:3, data:3, hum:2, stak:2, reg:3, var:2, creat:1, temp:3},
+        {tarefa: 'Capacitar pesquisadores', cog:4, data:3, hum:4, stak:3, reg:2, var:2, creat:3, temp:2}
+    ],
+    'Equipe de Parcerias': [
+        {tarefa: 'Identificar oportunidades parceria', cog:4, data:4, hum:4, stak:5, reg:2, var:4, creat:3, temp:2},
+        {tarefa: 'Negociar contratos tecnologia', cog:4, data:3, hum:4, stak:5, reg:4, var:2, creat:2, temp:3},
+        {tarefa: 'Gerenciar portfólio inovação', cog:4, data:4, hum:2, stak:4, reg:2, var:3, creat:3, temp:2},
+        {tarefa: 'Comunicação de inovações', cog:4, data:2, hum:3, stak:3, reg:1, var:4, creat:5, temp:3},
+        {tarefa: 'Compliance e propriedade intelectual', cog:3, data:4, hum:2, stak:3, reg:5, var:1, creat:1, temp:2}
+    ],
+    'Equipe Open Innovation': [
+        {tarefa: 'Organizar hackathons e desafios', cog:4, data:2, hum:4, stak:4, reg:1, var:4, creat:5, temp:4},
+        {tarefa: 'Gestão comunidade makers', cog:3, data:3, hum:4, stak:3, reg:1, var:4, creat:3, temp:3},
+        {tarefa: 'Coordenar incubação startups', cog:4, data:3, hum:3, stak:4, reg:2, var:3, creat:4, temp:2}
+    ]
+};
+
+        function init() {
+            renderOrgTable(DEMO_ORG_DATA.length);
+            setupEventListeners();
+
+            // Inicia na tela de login (step-0). Enter no email dispara o check.
+            const emailInput = document.getElementById('loginEmail');
+            if (emailInput) {
+                emailInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') checkLoginEmail();
+                });
+            }
+        }
+        
+        function loadInteliData() {
+            // Set company info
+            document.getElementById('companyName').value = 'Inteli - Instituto de Tecnologia e Liderança';
+            document.getElementById('companySector').value = 'Educação';
+            document.getElementById('employeeCount').value = '145';
+            
+            // Proceed through steps
+            proceedToStep2();
+            proceedToStep3();
+            proceedToStep4();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('step1NextBtn').addEventListener('click', proceedToStep2);
+            document.getElementById('step2BackBtn').addEventListener('click', () => goToStep(1));
+            document.getElementById('step2NextBtn').addEventListener('click', proceedToStep3);
+            document.getElementById('step3BackBtn').addEventListener('click', () => goToStep(2));
+            document.getElementById('step3NextBtn').addEventListener('click', proceedToStep4);
+            document.getElementById('step4BackBtn').addEventListener('click', () => goToStep(3));
+            document.getElementById('step4NextBtn').addEventListener('click', proceedToStep5);
+            document.getElementById('step5BackBtn').addEventListener('click', () => goToStep(4));
+            document.getElementById('restartBtn').addEventListener('click', restart);
+            document.getElementById('addRowBtn').addEventListener('click', addOrgRow);
+
+            document.querySelectorAll('[data-step]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    goToStep(parseInt(e.target.dataset.step));
+                });
+            });
+        }
+
+        function renderOrgTable(rowCount) {
+            const tbody = document.getElementById('orgTableBody');
+            tbody.innerHTML = '';
+
+            for (let i = 0; i < rowCount; i++) {
+                const demoRow = DEMO_ORG_DATA[i] || {dir: '', area: '', cargo: '', qtd: 1, reporta: '', resp: ''};
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="table-cell-input" value="${demoRow.dir}" data-field="dir"></td>
+                    <td><input type="text" class="table-cell-input" value="${demoRow.area}" data-field="area"></td>
+                    <td><input type="text" class="table-cell-input" value="${demoRow.cargo}" data-field="cargo"></td>
+                    <td><input type="number" class="table-cell-input" value="${demoRow.qtd}" data-field="qtd" min="1"></td>
+                    <td><input type="text" class="table-cell-input" value="${demoRow.reporta}" data-field="reporta"></td>
+                    <td><input type="text" class="table-cell-input" value="${demoRow.resp}" data-field="resp"></td>
+                    <td><button class="button button-danger" onclick="deleteOrgRow(this)">X</button></td>
+                `;
+                tbody.appendChild(tr);
+
+                tr.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const rowIdx = Array.from(tbody.querySelectorAll('tr')).indexOf(tr);
+                        const field = e.target.dataset.field;
+                        if (!appState.orgChart[rowIdx]) {
+                            appState.orgChart[rowIdx] = {dir: '', area: '', cargo: '', qtd: 1, reporta: '', resp: ''};
+                        }
+                        appState.orgChart[rowIdx][field] = field === 'qtd' ? parseInt(e.target.value) : e.target.value;
+                    });
+                });
+            }
+
+            appState.orgChart = Array(rowCount).fill(null).map((_, i) => ({
+                dir: DEMO_ORG_DATA[i]?.dir || '',
+                area: DEMO_ORG_DATA[i]?.area || '',
+                cargo: DEMO_ORG_DATA[i]?.cargo || '',
+                qtd: DEMO_ORG_DATA[i]?.qtd || 1,
+                reporta: DEMO_ORG_DATA[i]?.reporta || '',
+                resp: DEMO_ORG_DATA[i]?.resp || ''
+            }));
+        }
+
+        function addOrgRow() {
+            renderOrgTable(appState.orgChart.length + 1);
+        }
+
+        function deleteOrgRow(btn) {
+            btn.closest('tr').remove();
+            updateOrgChart();
+        }
+
+        function updateOrgChart() {
+            const tbody = document.getElementById('orgTableBody');
+            appState.orgChart = [];
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const row = {};
+                tr.querySelectorAll('input').forEach(input => {
+                    const field = input.dataset.field;
+                    row[field] = field === 'qtd' ? parseInt(input.value) : input.value;
+                });
+                appState.orgChart.push(row);
+            });
+        }
+
+        function sortOrgTable(columnIndex) {
+            const tbody = document.getElementById('orgTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const fields = ['dir', 'area', 'cargo', 'qtd', 'reporta', 'resp'];
+            const field = fields[columnIndex];
+
+            rows.sort((a, b) => {
+                const aVal = a.querySelectorAll('input')[columnIndex].value;
+                const bVal = b.querySelectorAll('input')[columnIndex].value;
+                return aVal.localeCompare(bVal);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // === Login por email (domínio + admin) ===
+        let isAdminSession = false;
+        let availableEmpresas = [];
+
+        async function checkLoginEmail() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const status = document.getElementById('loginStatus');
+            const btn = document.getElementById('loginBtn');
+
+            if (!email || !email.includes('@')) {
+                status.innerHTML = '<span style="color:#E74C3C;">Digite um email válido.</span>';
+                return;
+            }
+
+            appState.userEmail = email;
+            btn.disabled = true;
+            btn.textContent = '⏳ Verificando...';
+            status.innerHTML = '';
+
+            try {
+                const base = ENDPOINTS.saveOrg.split('?')[0];
+                const url = base + '?action=lookupByEmail&email=' + encodeURIComponent(email);
+                const res = await fetch(url);
+                const data = await res.json();
+
+                isAdminSession = data.isAdmin === true;
+                availableEmpresas = data.matches || [];
+
+                if (isAdminSession) {
+                    // Admin: busca TODAS as empresas para dropdown
+                    const resAll = await fetch(base + '?action=listAllEmpresas');
+                    const dataAll = await resAll.json();
+                    availableEmpresas = dataAll.empresas || [];
+                    renderEmpresaSelector(true);
+                } else if (availableEmpresas.length > 0) {
+                    renderEmpresaSelector(false);
+                } else {
+                    status.innerHTML = '<span style="color:#4A4A6A;">Nenhuma análise prévia para <strong>@' + data.domain + '</strong>. Abrindo wizard para nova empresa...</span>';
+                    setTimeout(() => {
+                        goToStep(1);
+                        btn.disabled = false;
+                        btn.textContent = 'Continuar →';
+                    }, 900);
+                }
+            } catch (err) {
+                console.warn('Falha no lookup:', err);
+                status.innerHTML = '<span style="color:#FDCB6E;">⚠️ Backend offline. Abrindo wizard em modo local...</span>';
+                setTimeout(() => {
+                    goToStep(1);
+                    btn.disabled = false;
+                    btn.textContent = 'Continuar →';
+                }, 800);
+            }
+        }
+
+        function renderEmpresaSelector(isAdmin) {
+            const status = document.getElementById('loginStatus');
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = false;
+            btn.textContent = 'Continuar →';
+
+            const title = isAdmin
+                ? '👑 Admin — selecione a empresa:'
+                : `Empresas encontradas para <strong>@${appState.userEmail.split('@')[1]}</strong>:`;
+
+            let html = `<div style="margin-top:12px;text-align:left;">
+                <div style="font-size:12px;color:#4A4A6A;margin-bottom:8px;">${title}</div>
+                <select id="empresaSelector" style="width:100%;padding:10px;border:1px solid #E0E0E8;border-radius:6px;font-family:inherit;font-size:13px;background:#F8F9FC;">
+                    <option value="">-- escolha uma empresa --</option>`;
+            availableEmpresas.forEach(emp => {
+                html += `<option value="${emp.id}">${emp.nome} — ${emp.setor} (${emp.num_colaboradores} colab.)</option>`;
+            });
+            html += `<option value="__new__">➕ Criar nova análise (não listada)</option>
+                </select>
+                <button class="button button-primary" style="width:100%;justify-content:center;margin-top:12px;" onclick="confirmEmpresaChoice()">Carregar empresa selecionada →</button>
+            </div>`;
+            status.innerHTML = html;
+        }
+
+        function confirmEmpresaChoice() {
+            const sel = document.getElementById('empresaSelector');
+            const choice = sel.value;
+            if (!choice) { alert('Selecione uma empresa.'); return; }
+
+            if (choice === '__new__') {
+                goToStep(1);
+            } else {
+                loadPreviousAnalysis(choice);
+            }
+        }
+
+        async function loadPreviousAnalysis(empresaId) {
+            const status = document.getElementById('loginStatus');
+            status.innerHTML = '<span style="color:#6C5CE7;">⏳ Carregando dados anteriores...</span>';
+
+            try {
+                const base = ENDPOINTS.saveOrg.split('?')[0];
+                const url = base + '?action=loadEmpresa&empresa_id=' + encodeURIComponent(empresaId);
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (!data.success) {
+                    status.innerHTML = '<span style="color:#E74C3C;">Erro ao carregar: ' + (data.error || 'desconhecido') + '</span>';
+                    return;
+                }
+
+                // Popular appState
+                appState.empresaId = data.empresa.id;
+                appState.companyInfo = {
+                    id: data.empresa.id,
+                    name: data.empresa.nome,
+                    sector: data.empresa.setor,
+                    employees: data.empresa.num_colaboradores,
+                    email_contato: data.empresa.email_contato,
+                    data_criacao: data.empresa.data_criacao,
+                    data_atualizacao: data.empresa.data_atualizacao,
+                    status: data.empresa.status
+                };
+                appState.orgChart = data.organograma.map(o => ({
+                    dir: o.diretoria, area: o.area, cargo: o.cargo,
+                    qtd: o.qtd_pessoas, reporta: o.reporta_para, resp: o.responsabilidades
+                }));
+                appState.tasks = data.tarefas.map(t => ({
+                    id: t.id, empresa_id: t.empresa_id, cargo: t.cargo,
+                    diretoria: t.diretoria, area: t.area, tarefa: t.tarefa,
+                    cog: t.cog, data: t.data_dep, hum: t.hum, stak: t.stak,
+                    reg: t.reg, var: t.var, creat: t.creat, temp: t.temp
+                }));
+                appState.results = data.tarefas.map(t => ({
+                    id: t.id, empresa_id: t.empresa_id, cargo: t.cargo,
+                    diretoria: t.diretoria, area: t.area, tarefa: t.tarefa,
+                    cog: t.cog, data: t.data_dep, hum: t.hum, stak: t.stak,
+                    reg: t.reg, var: t.var, creat: t.creat, temp: t.temp,
+                    AS: parseFloat(t.AS), AuS: parseFloat(t.AuS),
+                    HARM: parseFloat(t.HARM), DNA: t.DNA, quadrant: t.quadrant
+                }));
+
+                status.innerHTML = `<span style="color:#00B894;">✅ ${appState.results.length} tarefas carregadas. Redirecionando para resultados...</span>`;
+
+                // Pré-popular campos do Step 1
+                document.getElementById('companyName').value = appState.companyInfo.name;
+                const secSel = document.getElementById('companySector');
+                const secVal = appState.companyInfo.sector;
+                const optExists = Array.from(secSel.options).some(o => o.value === secVal);
+                if (optExists) {
+                    secSel.value = secVal;
+                } else {
+                    secSel.value = '__outro__';
+                    document.getElementById('companySectorOther').style.display = 'block';
+                    document.getElementById('companySectorOther').value = secVal;
+                }
+                document.getElementById('employeeCount').value = appState.companyInfo.employees;
+
+                // Ir direto para Step 3 (resultados) com dados já prontos
+                setTimeout(() => {
+                    renderOrgTable(appState.orgChart.length);
+                    renderStep2();
+                    renderStep3();
+                    renderStep4();
+                    renderStep5();
+                    goToStep(3);
+                }, 1000);
+            } catch (err) {
+                console.error('Falha no load:', err);
+                status.innerHTML = '<span style="color:#E74C3C;">Erro de conexão. Tente novamente.</span>';
+            }
+        }
+
+        function onSectorChange() {
+            const sel = document.getElementById('companySector');
+            const other = document.getElementById('companySectorOther');
+            if (sel.value === '__outro__') {
+                other.style.display = 'block';
+                other.focus();
+            } else {
+                other.style.display = 'none';
+                other.value = '';
+            }
+        }
+
+        function getSectorValue() {
+            const sel = document.getElementById('companySector');
+            if (sel.value === '__outro__') {
+                return document.getElementById('companySectorOther').value.trim();
+            }
+            return sel.value;
+        }
+
+        function proceedToStep2() {
+            appState.companyInfo = {
+                id: appState.empresaId,
+                name: document.getElementById('companyName').value,
+                sector: getSectorValue(),
+                employees: parseInt(document.getElementById('employeeCount').value) || 0,
+                email_contato: appState.userEmail || '',
+                data_criacao: new Date().toISOString(),
+                data_atualizacao: new Date().toISOString(),
+                status: 'ativo'
+            };
+
+            updateOrgChart();
+
+            if (!appState.companyInfo.name || !appState.companyInfo.sector || appState.orgChart.filter(r => r.cargo.trim()).length === 0) {
+                alert('Por favor, preencha todos os campos obrigatórios');
+                return;
+            }
+
+            appState.orgChart = appState.orgChart.filter(row => row.cargo.trim() !== '');
+
+            appState.tasks = [];
+            appState.orgChart.forEach(role => {
+                const cargoName = role.cargo;
+                const taskTemplates = DEMO_TASKS_BY_ROLE[cargoName] || [
+                    {tarefa: 'Tarefa Padrão 1', cog: 3, data: 2, hum: 3, stak: 2, reg: 1, var: 2, creat: 3, temp: 2},
+                    {tarefa: 'Tarefa Padrão 2', cog: 2, data: 1, hum: 2, stak: 1, reg: 1, var: 1, creat: 2, temp: 3}
+                ];
+
+                taskTemplates.forEach(task => {
+                    appState.tasks.push({
+                        cargo: cargoName,
+                        diretoria: role.dir,
+                        area: role.area,
+                        ...task
+                    });
+                });
+            });
+
+            renderStep2();
+            goToStep(2);
+        }
+
+        const DIMENSIONS = {
+            cog: {
+                name: 'Nível de Raciocínio',
+                desc: 'Qual a profundidade de pensamento que esta tarefa exige?',
+                labels: ['Mecânico', 'Procedural', 'Analítico', 'Estratégico', 'Abstrato']
+            },
+            data: {
+                name: 'Volume de Informação',
+                desc: 'Quanta informação precisa ser consultada ou processada?',
+                labels: ['Mínimo', 'Básico', 'Moderado', 'Extenso', 'Massivo']
+            },
+            hum: {
+                name: 'Sensibilidade Humana',
+                desc: 'Quão importante é o toque humano, empatia ou intuição?',
+                labels: ['Objetivo', 'Protocolar', 'Interpretativo', 'Empático', 'Profundamente Humano']
+            },
+            stak: {
+                name: 'Complexidade Relacional',
+                desc: 'Quantas pessoas e interesses diferentes estão envolvidos?',
+                labels: ['Individual', 'Equipe Direta', 'Multi-área', 'Executivo', 'Negociação Complexa']
+            },
+            reg: {
+                name: 'Conformidade',
+                desc: 'Quão regulamentada ou restrita é a forma de executar?',
+                labels: ['Livre', 'Diretrizes Internas', 'Normatizado', 'Regulado', 'Alta Regulação']
+            },
+            var: {
+                name: 'Previsibilidade',
+                desc: 'Quão diferente é cada vez que a tarefa é executada?',
+                labels: ['Sempre Igual', 'Previsível', 'Variável', 'Situacional', 'Cada Caso é Único']
+            },
+            creat: {
+                name: 'Espaço Criativo',
+                desc: 'Quanta liberdade existe para criar soluções novas?',
+                labels: ['Seguir Regra', 'Adaptar', 'Melhorar', 'Criar', 'Inovar']
+            },
+            temp: {
+                name: 'Urgência',
+                desc: 'Qual a pressão de tempo para entregar?',
+                labels: ['Sem Prazo', 'Flexível', 'Semanal', 'Diário', 'Tempo Real']
+            }
+        };
+
+        let currentCargoFilter = '__all__';
+
+        function renderStep2() {
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = '';
+
+            const select = document.getElementById('cargoFilter');
+            const prevValue = select.value;
+            select.innerHTML = '<option value="__all__">Todas as funções</option>';
+            const uniqueCargos = [...new Set(appState.tasks.map(t => t.cargo))];
+            uniqueCargos.forEach(cargo => {
+                const opt = document.createElement('option');
+                opt.value = cargo;
+                opt.textContent = `${cargo} (${appState.tasks.filter(t => t.cargo === cargo).length} tarefas)`;
+                select.appendChild(opt);
+            });
+            select.value = uniqueCargos.includes(prevValue) ? prevValue : (currentCargoFilter !== '__all__' && uniqueCargos.includes(currentCargoFilter) ? currentCargoFilter : '__all__');
+            currentCargoFilter = select.value;
+
+            const filteredCargos = currentCargoFilter === '__all__' ? uniqueCargos : [currentCargoFilter];
+            const totalShown = filteredCargos.reduce((sum, c) => sum + appState.tasks.filter(t => t.cargo === c).length, 0);
+            document.getElementById('cargoTaskCount').textContent = `${totalShown} tarefas exibidas`;
+
+            filteredCargos.forEach(cargo => {
+                const cargoTasks = appState.tasks.filter(t => t.cargo === cargo);
+                const roleInfo = appState.orgChart.find(r => r.cargo === cargo);
+
+                const header = document.createElement('div');
+                header.className = 'cargo-section-header';
+                header.innerHTML = `
+                    <div class="cargo-section-title">${cargo}</div>
+                    <div class="cargo-section-meta">${roleInfo ? roleInfo.area + ' • ' + roleInfo.dir : ''} • ${cargoTasks.length} tarefas</div>
+                `;
+                container.appendChild(header);
+
+                cargoTasks.forEach((task, idx) => {
+                    renderSliderCard(container, cargo, idx, task);
+                });
+            });
+        }
+
+        function renderSliderCard(container, cargo, idx, task) {
+            const card = document.createElement('div');
+            card.className = 'task-slider-card';
+            card.dataset.cargo = cargo;
+            card.dataset.idx = idx;
+
+            const dimKeys = ['cog', 'data', 'hum', 'stak', 'reg', 'var', 'creat', 'temp'];
+
+            let slidersHTML = '';
+            dimKeys.forEach(key => {
+                const dim = DIMENSIONS[key];
+                const val = task[key] || 3;
+                const currentLabel = dim.labels[val - 1];
+
+                slidersHTML += `
+                    <div class="slider-row">
+                        <div class="slider-label-row">
+                            <span class="slider-dimension-name" title="${dim.desc}">${dim.name}</span>
+                            <span class="slider-current-label" id="label-${cargo}-${idx}-${key}">${currentLabel}</span>
+                        </div>
+                        <div class="slider-input-row">
+                            <input type="range" min="1" max="5" value="${val}"
+                                data-cargo="${cargo}" data-idx="${idx}" data-field="${key}"
+                                oninput="onSliderChange(this)">
+                        </div>
+                        <div class="slider-ticks">
+                            ${dim.labels.map((l, i) => `<span class="slider-tick-label">${i === 0 || i === 4 ? l : ''}</span>`).join('')}
+
+                        </div>
+                    </div>
+                `;
+            });
+
+            card.innerHTML = `
+                <div class="task-slider-header">
+                    <div class="task-slider-name">
+                        <input type="text" value="${task.tarefa}"
+                            data-cargo="${cargo}" data-idx="${idx}" data-field="tarefa"
+                            onchange="onSliderChange(this)">
+                    </div>
+                    <button class="task-slider-delete" onclick="deleteSliderTask('${cargo}', ${idx})" title="Remover tarefa">✕</button>
+                </div>
+                <div class="slider-grid">
+                    ${slidersHTML}
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        function onSliderChange(el) {
+            const cargo = el.dataset.cargo;
+            const idx = parseInt(el.dataset.idx);
+            const field = el.dataset.field;
+            const value = field === 'tarefa' ? el.value : parseInt(el.value);
+
+            const cargoTasks = appState.tasks.filter(t => t.cargo === cargo);
+            const globalIdx = appState.tasks.indexOf(cargoTasks[idx]);
+            if (globalIdx >= 0) {
+                appState.tasks[globalIdx][field] = value;
+            }
+
+            if (field !== 'tarefa' && DIMENSIONS[field]) {
+                const labelEl = document.getElementById(`label-${cargo}-${idx}-${field}`);
+                if (labelEl) {
+                    labelEl.textContent = DIMENSIONS[field].labels[value - 1];
+                }
+            }
+        }
+
+        function filterByCargo() {
+            currentCargoFilter = document.getElementById('cargoFilter').value;
+            renderStep2();
+        }
+
+        function addTaskToCurrentCargo() {
+            const cargo = currentCargoFilter === '__all__'
+                ? (appState.orgChart.length > 0 ? appState.orgChart[0].cargo : 'Novo Cargo')
+                : currentCargoFilter;
+
+            const roleInfo = appState.orgChart.find(r => r.cargo === cargo);
+            const newTask = {
+                cargo: cargo,
+                diretoria: roleInfo ? roleInfo.dir : '',
+                area: roleInfo ? roleInfo.area : '',
+                tarefa: 'Nova Tarefa',
+                cog: 3, data: 3, hum: 3, stak: 3, reg: 3, var: 3, creat: 3, temp: 3
+            };
+            appState.tasks.push(newTask);
+            renderStep2();
+        }
+
+        function deleteSliderTask(cargo, idx) {
+            const cargoTasks = appState.tasks.filter(t => t.cargo === cargo);
+            const taskToDelete = cargoTasks[idx];
+            const globalIdx = appState.tasks.indexOf(taskToDelete);
+            if (globalIdx >= 0) {
+                appState.tasks.splice(globalIdx, 1);
+                renderStep2();
+            }
+        }
+
+        function proceedToStep3() {
+            calculateResults();
+            renderStep3();
+            goToStep(3);
+        }
+
+        function calculateResults() {
+            let taskSeq = 1;
+            const now = new Date().toISOString();
+            appState.results = appState.tasks.map(task => {
+                const cog = parseInt(task.cog) || 3;
+                const data = parseInt(task.data) || 3;
+                const hum = parseInt(task.hum) || 3;
+                const stak = parseInt(task.stak) || 3;
+                const reg = parseInt(task.reg) || 3;
+                const vari = parseInt(task.var) || 3;
+                const creat = parseInt(task.creat) || 3;
+                const temp = parseInt(task.temp) || 3;
+
+                const AS = 0.20 * (5 - cog) + 0.15 * data + 0.15 * (5 - hum) + 0.12 * (5 - stak) + 0.10 * (5 - reg) + 0.08 * (5 - vari) + 0.10 * (5 - creat) + 0.10 * temp;
+                const AuS = 0.25 * cog + 0.20 * hum + 0.15 * stak + 0.10 * vari + 0.08 * reg + 0.12 * creat + 0.10 * (5 - temp);
+                const HARM = 0.30 * ((hum + creat) / 10) + 0.25 * ((cog + vari) / 10) + 0.25 * (stak / 5) + 0.20 * ((creat + vari) / 10);
+
+                const dnaValues = [cog, data, hum, stak, reg, vari, creat, temp];
+                let dna = '';
+                dnaValues.forEach(val => {
+                    const hex = Math.floor(val * 255 / 5).toString(16).padStart(2, '0').toUpperCase();
+                    dna += hex;
+                });
+
+                let quadrant = 'PRESERVE';
+                if (AS >= 3.0 && AuS < 2.5) {
+                    quadrant = 'AUTOMATE';
+                } else if (AS >= 2.5 && AuS >= 2.5) {
+                    quadrant = 'AUGMENT';
+                } else if (AS < 2.5 && AuS >= 3.0) {
+                    quadrant = 'TRANSFORM';
+                }
+
+                return {
+                    ...task,
+                    id: task.id || generateTaskId(appState.empresaId, taskSeq++),
+                    empresa_id: appState.empresaId,
+                    cog: cog,
+                    data: data,
+                    hum: hum,
+                    stak: stak,
+                    reg: reg,
+                    var: vari,
+                    creat: creat,
+                    temp: temp,
+                    AS: parseFloat(AS.toFixed(2)),
+                    AuS: parseFloat(AuS.toFixed(2)),
+                    HARM: parseFloat(HARM.toFixed(2)),
+                    DNA: dna,
+                    quadrant: quadrant,
+                    data_criacao: now,
+                    data_atualizacao: now
+                };
+            });
+        }
+
+        function getQuadrantReasoning(result) {
+            const cog = result.cog;
+            const data = result.data;
+            const hum = result.hum;
+            const creat = result.creat;
+            const AS = result.AS;
+            const AuS = result.AuS;
+
+            if (result.quadrant === 'AUTOMATE') {
+                return `Esta tarefa tem baixa complexidade cognitiva (Cog: ${cog}), alta dependência de dados (Data: ${data}) e baixo julgamento humano (Hum: ${hum}), tornando-a ideal para automação completa.`;
+            } else if (result.quadrant === 'AUGMENT') {
+                return `Esta tarefa combina alta complexidade cognitiva (Cog: ${cog}) com necessidade de julgamento humano (Hum: ${hum}), beneficiando-se de IA como co-piloto.`;
+            } else if (result.quadrant === 'TRANSFORM') {
+                return `Esta tarefa exige alto julgamento humano (Hum: ${hum}) e criatividade (Creat: ${creat}), mas tem baixo potencial de automação — a função precisa ser redesenhada.`;
+            } else {
+                return `Esta tarefa é essencialmente humana com baixo potencial tanto de automação quanto de augmentação — deve ser protegida e valorizada.`;
+            }
+        }
+
+        function renderStep3() {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = '';
+
+            const counts = {
+                AUTOMATE: appState.results.filter(r => r.quadrant === 'AUTOMATE').length,
+                AUGMENT: appState.results.filter(r => r.quadrant === 'AUGMENT').length,
+                TRANSFORM: appState.results.filter(r => r.quadrant === 'TRANSFORM').length,
+                PRESERVE: appState.results.filter(r => r.quadrant === 'PRESERVE').length
+            };
+
+            const stats = [
+                { label: 'AUTOMATE', value: counts.AUTOMATE, className: 'automate' },
+                { label: 'AUGMENT', value: counts.AUGMENT, className: 'augment' },
+                { label: 'TRANSFORM', value: counts.TRANSFORM, className: 'transform' },
+                { label: 'PRESERVE', value: counts.PRESERVE, className: 'preserve' }
+            ];
+
+            stats.forEach(stat => {
+                const div = document.createElement('div');
+                div.className = `stat-card ${stat.className}`;
+                div.innerHTML = `
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                `;
+                statsGrid.appendChild(div);
+            });
+
+            const scatterPlot = document.getElementById('scatterPlot');
+            scatterPlot.querySelectorAll('.scatter-dot').forEach(dot => dot.remove());
+
+            const plotWidth = scatterPlot.offsetWidth;
+            const plotHeight = scatterPlot.offsetHeight;
+            const padding = 40;
+
+            appState.results.forEach(result => {
+                const dot = document.createElement('div');
+                dot.className = `scatter-dot ${result.quadrant.toLowerCase()}`;
+                const x = (result.AS / 5) * (plotWidth - 2 * padding) + padding;
+                const y = plotHeight - ((result.AuS / 5) * (plotHeight - 2 * padding) + padding);
+                dot.style.left = x + 'px';
+                dot.style.top = y + 'px';
+                dot.title = `${result.tarefa} - AS: ${result.AS}, AuS: ${result.AuS}`;
+                scatterPlot.appendChild(dot);
+            });
+
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+
+            appState.results.forEach(result => {
+                const tr = document.createElement('tr');
+                tr.className = `quadrant-${result.quadrant.toLowerCase()}`;
+                tr.style.borderLeftWidth = '4px';
+
+                if (result.quadrant === 'AUTOMATE') {
+                    tr.style.borderLeftColor = '#00B894';
+                } else if (result.quadrant === 'AUGMENT') {
+                    tr.style.borderLeftColor = '#6C5CE7';
+                } else if (result.quadrant === 'TRANSFORM') {
+                    tr.style.borderLeftColor = '#FDCB6E';
+                } else {
+                    tr.style.borderLeftColor = '#0984E3';
+                }
+
+                const reasoning = getQuadrantReasoning(result);
+                tr.innerHTML = `
+                    <td style="font-size:10px;font-family:monospace;color:#888;">${result.id}</td>
+                    <td>${result.cargo}</td>
+                    <td>${result.tarefa}</td>
+                    <td>${result.cog}</td>
+                    <td>${result.data}</td>
+                    <td>${result.hum}</td>
+                    <td>${result.stak}</td>
+                    <td>${result.reg}</td>
+                    <td>${result.var}</td>
+                    <td>${result.creat}</td>
+                    <td>${result.temp}</td>
+                    <td>${result.AS.toFixed(2)}</td>
+                    <td>${result.AuS.toFixed(2)}</td>
+                    <td>${result.HARM.toFixed(2)}</td>
+                    <td>${result.DNA}</td>
+                    <td>
+                        <strong>${result.quadrant}</strong>
+                        <div class="tooltip-box">
+                            <button class="whyButton" title="${reasoning}">Por quê?</button>
+                            <span class="tooltip-text">${reasoning}</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function sortTable(columnIndex) {
+            const tbody = document.getElementById('resultsTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            const columnMap = ['id', 'cargo', 'tarefa', 'cog', 'data', 'hum', 'stak', 'reg', 'var', 'creat', 'temp', 'AS', 'AuS', 'HARM', 'DNA', 'quadrant'];
+            const column = columnMap[columnIndex];
+
+            rows.sort((a, b) => {
+                const aVal = a.cells[columnIndex].textContent.trim();
+                const bVal = b.cells[columnIndex].textContent.trim();
+
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return aNum - bNum;
+                }
+                return aVal.localeCompare(bVal);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function proceedToStep4() {
+            renderStep4();
+            goToStep(4);
+        }
+
+        function renderStep4() {
+            renderRoleAnalysis();
+            renderAreaAnalysis();
+            renderDirectorateAnalysis();
+            renderOrganizationAnalysis();
+        }
+
+        function renderRoleAnalysis() {
+            const container = document.getElementById('roleAnalysisContainer');
+            container.innerHTML = '';
+
+            const roleMap = {};
+            appState.results.forEach(result => {
+                if (!roleMap[result.cargo]) {
+                    roleMap[result.cargo] = {
+                        cargo: result.cargo,
+                        diretoria: result.diretoria,
+                        area: result.area,
+                        tasks: []
+                    };
+                }
+                roleMap[result.cargo].tasks.push(result);
+            });
+
+            Object.values(roleMap).forEach(role => {
+                const quadrants = {
+                    AUTOMATE: role.tasks.filter(t => t.quadrant === 'AUTOMATE').length,
+                    AUGMENT: role.tasks.filter(t => t.quadrant === 'AUGMENT').length,
+                    TRANSFORM: role.tasks.filter(t => t.quadrant === 'TRANSFORM').length,
+                    PRESERVE: role.tasks.filter(t => t.quadrant === 'PRESERVE').length
+                };
+
+                const harmAvg = (role.tasks.reduce((sum, t) => sum + t.HARM, 0) / role.tasks.length).toFixed(2);
+                const hourFreed = (quadrants.AUTOMATE * 4 * 0.75 + quadrants.AUGMENT * 3 * 0.40).toFixed(1);
+                const roiAnnual = (hourFreed * 52 * 75).toFixed(0);
+
+                const total = role.tasks.length;
+                const auto = ((quadrants.AUTOMATE / total) * 100).toFixed(0);
+                const aug = ((quadrants.AUGMENT / total) * 100).toFixed(0);
+                const trans = ((quadrants.TRANSFORM / total) * 100).toFixed(0);
+                const pres = ((quadrants.PRESERVE / total) * 100).toFixed(0);
+
+                const suggestion = `${hourFreed}h/semana liberadas. Sugestão: realocar 60% para áreas de ${quadrants.TRANSFORM > 0 ? 'transformação' : 'desenvolvimento'} e 40% para desenvolvimento de competências em IA.`;
+
+                const card = document.createElement('div');
+                card.className = 'role-card';
+                card.innerHTML = `
+                    <div class="role-header">
+                        <div>
+                            <div class="role-name">${role.cargo}</div>
+                            <div class="role-area">${role.area} • ${role.diretoria}</div>
+                        </div>
+                    </div>
+                    <div class="quadrant-bar">
+                        ${quadrants.AUTOMATE > 0 ? `<div class="quadrant-bar-segment automate" style="flex: ${auto}%;">AUTO ${auto}%</div>` : ''}
+                        ${quadrants.AUGMENT > 0 ? `<div class="quadrant-bar-segment augment" style="flex: ${aug}%;">AUG ${aug}%</div>` : ''}
+                        ${quadrants.TRANSFORM > 0 ? `<div class="quadrant-bar-segment transform" style="flex: ${trans}%;">TRANS ${trans}%</div>` : ''}
+                        ${quadrants.PRESERVE > 0 ? `<div class="quadrant-bar-segment preserve" style="flex: ${pres}%;">PRES ${pres}%</div>` : ''}
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <span class="metric-label">HARM Score Médio:</span>
+                            <span class="metric-value">${harmAvg}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Potencial de Liberação:</span>
+                            <span class="metric-value">${hourFreed}h/semana</span>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <span class="metric-label">ROI Estimado Anual:</span>
+                            <span class="metric-value">R$ ${roiAnnual}</span>
+                        </div>
+                    </div>
+                    <div class="suggestion">
+                        <strong>Sugestão de Redistribuição:</strong> ${suggestion}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAreaAnalysis() {
+            const container = document.getElementById('areaAnalysisContainer');
+            container.innerHTML = '';
+
+            const areaMap = {};
+            appState.results.forEach(result => {
+                if (!areaMap[result.area]) {
+                    areaMap[result.area] = {
+                        area: result.area,
+                        tasks: []
+                    };
+                }
+                areaMap[result.area].tasks.push(result);
+            });
+
+            Object.values(areaMap).forEach(area => {
+                const quadrants = {
+                    AUTOMATE: area.tasks.filter(t => t.quadrant === 'AUTOMATE').length,
+                    AUGMENT: area.tasks.filter(t => t.quadrant === 'AUGMENT').length,
+                    TRANSFORM: area.tasks.filter(t => t.quadrant === 'TRANSFORM').length,
+                    PRESERVE: area.tasks.filter(t => t.quadrant === 'PRESERVE').length
+                };
+
+                const total = area.tasks.length;
+                const automationRate = ((quadrants.AUTOMATE + quadrants.AUGMENT) / total * 100).toFixed(0);
+                const maturity = automationRate > 50 ? 'high' : automationRate > 30 ? 'medium' : 'low';
+                const maturityText = maturity === 'high' ? 'Alta' : maturity === 'medium' ? 'Média' : 'Baixa';
+
+                const hourFreed = (quadrants.AUTOMATE * 4 * 0.75 + quadrants.AUGMENT * 3 * 0.40).toFixed(1);
+                const roiAnnual = (hourFreed * 52 * 75).toFixed(0);
+
+                const auto = ((quadrants.AUTOMATE / total) * 100).toFixed(0);
+                const aug = ((quadrants.AUGMENT / total) * 100).toFixed(0);
+                const trans = ((quadrants.TRANSFORM / total) * 100).toFixed(0);
+                const pres = ((quadrants.PRESERVE / total) * 100).toFixed(0);
+
+                const card = document.createElement('div');
+                card.className = 'area-card';
+                card.innerHTML = `
+                    <div class="area-header">
+                        <div class="area-title">${area.area}</div>
+                        <div class="area-meta">${area.tasks.length} tarefas</div>
+                    </div>
+                    <div class="quadrant-bar">
+                        ${quadrants.AUTOMATE > 0 ? `<div class="quadrant-bar-segment automate" style="flex: ${auto}%;">A ${auto}%</div>` : ''}
+                        ${quadrants.AUGMENT > 0 ? `<div class="quadrant-bar-segment augment" style="flex: ${aug}%;">B ${aug}%</div>` : ''}
+                        ${quadrants.TRANSFORM > 0 ? `<div class="quadrant-bar-segment transform" style="flex: ${trans}%;">T ${trans}%</div>` : ''}
+                        ${quadrants.PRESERVE > 0 ? `<div class="quadrant-bar-segment preserve" style="flex: ${pres}%;">P ${pres}%</div>` : ''}
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <div class="stat-box-label">Tempo Liberado</div>
+                            <div class="stat-box-value">${hourFreed}h</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">ROI Anual</div>
+                            <div class="stat-box-value">R$ ${roiAnnual}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">Taxa de Automação</div>
+                            <div class="stat-box-value">${automationRate}%</div>
+                        </div>
+                    </div>
+                    <span class="maturity-badge ${maturity}">Maturidade: ${maturityText}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderDirectorateAnalysis() {
+            const container = document.getElementById('directorateAnalysisContainer');
+            container.innerHTML = '';
+
+            const dirMap = {};
+            appState.results.forEach(result => {
+                if (!dirMap[result.diretoria]) {
+                    dirMap[result.diretoria] = {
+                        diretoria: result.diretoria,
+                        tasks: []
+                    };
+                }
+                dirMap[result.diretoria].tasks.push(result);
+            });
+
+            Object.values(dirMap).forEach(dir => {
+                const quadrants = {
+                    AUTOMATE: dir.tasks.filter(t => t.quadrant === 'AUTOMATE').length,
+                    AUGMENT: dir.tasks.filter(t => t.quadrant === 'AUGMENT').length,
+                    TRANSFORM: dir.tasks.filter(t => t.quadrant === 'TRANSFORM').length,
+                    PRESERVE: dir.tasks.filter(t => t.quadrant === 'PRESERVE').length
+                };
+
+                const total = dir.tasks.length;
+                const hourFreed = (quadrants.AUTOMATE * 4 * 0.75 + quadrants.AUGMENT * 3 * 0.40).toFixed(1);
+                const roiAnnual = (hourFreed * 52 * 75).toFixed(0);
+
+                const auto = ((quadrants.AUTOMATE / total) * 100).toFixed(0);
+                const aug = ((quadrants.AUGMENT / total) * 100).toFixed(0);
+                const trans = ((quadrants.TRANSFORM / total) * 100).toFixed(0);
+                const pres = ((quadrants.PRESERVE / total) * 100).toFixed(0);
+
+                const uniqueRoles = [...new Set(dir.tasks.map(t => t.cargo))].length;
+
+                const card = document.createElement('div');
+                card.className = 'area-card';
+                card.innerHTML = `
+                    <div class="area-header">
+                        <div class="area-title">${dir.diretoria}</div>
+                        <div class="area-meta">${uniqueRoles} cargos • ${dir.tasks.length} tarefas</div>
+                    </div>
+                    <div class="quadrant-bar">
+                        ${quadrants.AUTOMATE > 0 ? `<div class="quadrant-bar-segment automate" style="flex: ${auto}%;">A ${auto}%</div>` : ''}
+                        ${quadrants.AUGMENT > 0 ? `<div class="quadrant-bar-segment augment" style="flex: ${aug}%;">B ${aug}%</div>` : ''}
+                        ${quadrants.TRANSFORM > 0 ? `<div class="quadrant-bar-segment transform" style="flex: ${trans}%;">T ${trans}%</div>` : ''}
+                        ${quadrants.PRESERVE > 0 ? `<div class="quadrant-bar-segment preserve" style="flex: ${pres}%;">P ${pres}%</div>` : ''}
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <div class="stat-box-label">Tempo Liberado Total</div>
+                            <div class="stat-box-value">${hourFreed}h</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label">ROI Anual</div>
+                            <div class="stat-box-value">R$ ${roiAnnual}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderOrganizationAnalysis() {
+            const container = document.getElementById('organizationAnalysisContainer');
+            container.innerHTML = '';
+
+            const quadrants = {
+                AUTOMATE: appState.results.filter(r => r.quadrant === 'AUTOMATE').length,
+                AUGMENT: appState.results.filter(r => r.quadrant === 'AUGMENT').length,
+                TRANSFORM: appState.results.filter(r => r.quadrant === 'TRANSFORM').length,
+                PRESERVE: appState.results.filter(r => r.quadrant === 'PRESERVE').length
+            };
+
+            const total = appState.results.length;
+            const hourFreed = (quadrants.AUTOMATE * 4 * 0.75 + quadrants.AUGMENT * 3 * 0.40).toFixed(1);
+            const roiAnnual = (hourFreed * 52 * 75).toFixed(0);
+
+            const auto = ((quadrants.AUTOMATE / total) * 100).toFixed(0);
+            const aug = ((quadrants.AUGMENT / total) * 100).toFixed(0);
+            const trans = ((quadrants.TRANSFORM / total) * 100).toFixed(0);
+            const pres = ((quadrants.PRESERVE / total) * 100).toFixed(0);
+
+            const operationalBefore = auto;
+            const strategicBefore = (parseInt(aug) + parseInt(trans));
+            const creativeBefore = pres;
+
+            const operationalAfter = Math.max(0, operationalBefore - 30).toFixed(0);
+            const strategicAfter = (parseInt(strategicBefore) + 20).toFixed(0);
+            const creativeAfter = (parseInt(creativeBefore) + 10).toFixed(0);
+
+            const summary = document.createElement('div');
+            summary.className = 'org-summary';
+            summary.innerHTML = `
+                <div class="summary-metric">
+                    <span class="summary-metric-label">Total de Tarefas Analisadas</span>
+                    <span class="summary-metric-value">${total}</span>
+                </div>
+                <div class="summary-metric">
+                    <span class="summary-metric-label">Tempo Liberado Potencial (por semana)</span>
+                    <span class="summary-metric-value">${hourFreed}h</span>
+                </div>
+                <div class="summary-metric">
+                    <span class="summary-metric-label">ROI Estimado Anual</span>
+                    <span class="summary-metric-value">R$ ${roiAnnual}</span>
+                </div>
+            `;
+            container.appendChild(summary);
+
+            const barChart = document.createElement('div');
+            barChart.style.marginTop = '24px';
+            barChart.innerHTML = `
+                <h3>Distribuição por Quadrante (Organização)</h3>
+                <div class="quadrant-bar" style="height: 40px; margin-top: 12px;">
+                    ${quadrants.AUTOMATE > 0 ? `<div class="quadrant-bar-segment automate" style="flex: ${auto}%; display: flex; align-items: center; justify-content: center; font-size: 13px;">AUTOMATE ${auto}%</div>` : ''}
+                    ${quadrants.AUGMENT > 0 ? `<div class="quadrant-bar-segment augment" style="flex: ${aug}%; display: flex; align-items: center; justify-content: center; font-size: 13px;">AUGMENT ${aug}%</div>` : ''}
+                    ${quadrants.TRANSFORM > 0 ? `<div class="quadrant-bar-segment transform" style="flex: ${trans}%; display: flex; align-items: center; justify-content: center; font-size: 13px;">TRANSFORM ${trans}%</div>` : ''}
+                    ${quadrants.PRESERVE > 0 ? `<div class="quadrant-bar-segment preserve" style="flex: ${pres}%; display: flex; align-items: center; justify-content: center; font-size: 13px;">PRESERVE ${pres}%</div>` : ''}
+                </div>
+            `;
+            container.appendChild(barChart);
+
+            const harmDist = document.createElement('div');
+            harmDist.className = 'harm-distribution';
+            harmDist.innerHTML = `<h3>Distribuição HARM Score</h3><div class="harm-bars" style="margin-top: 16px;">` +
+                [...Array(5)].map((_, i) => {
+                    const min = (i / 5).toFixed(1);
+                    const max = ((i + 1) / 5).toFixed(1);
+                    const count = appState.results.filter(r => r.HARM >= parseFloat(min) && r.HARM <= parseFloat(max)).length;
+                    const height = (count / total * 100);
+                    return `<div class="harm-bar" style="height: ${height}%; min-height: 4px;"><div class="harm-bar-label">${min}-${max}</div></div>`;
+                }).join('') +
+            `</div>`;
+            container.appendChild(harmDist);
+
+            const comparison = document.createElement('div');
+            comparison.className = 'comparison-section';
+            comparison.innerHTML = `
+                <div class="comparison-header">Antes vs Depois da Transformação com IA</div>
+                <div class="before-after">
+                    <div class="before-after-item">
+                        <div class="before-after-title">ANTES</div>
+                        <div class="before-after-row">
+                            <span class="before-after-label">Operacional</span>
+                            <span class="before-after-value">${operationalBefore}%</span>
+                        </div>
+                        <div class="before-after-row">
+                            <span class="before-after-label">Estratégico + Transformação</span>
+                            <span class="before-after-value">${strategicBefore}%</span>
+                        </div>
+                        <div class="before-after-row">
+                            <span class="before-after-label">Criativo</span>
+                            <span class="before-after-value">${creativeBefore}%</span>
+                        </div>
+                    </div>
+                    <div class="before-after-item">
+                        <div class="before-after-title">DEPOIS (Estimado)</div>
+                        <div class="before-after-row">
+                            <span class="before-after-label">Operacional</span>
+                            <span class="before-after-value">${operationalAfter}%</span>
+                        </div>
+                        <div class="before-after-row">
+                            <span class="before-after-label">Estratégico + Transformação</span>
+                            <span class="before-after-value">${strategicAfter}%</span>
+                        </div>
+                        <div class="before-after-row">
+                            <span class="before-after-label">Criativo</span>
+                            <span class="before-after-value">${creativeAfter}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(comparison);
+        }
+
+        function proceedToStep5() {
+            renderStep5();
+            goToStep(5);
+        }
+
+        // Gera sugestão de ação específica baseada no padrão da tarefa
+        function suggestActionForTask(t) {
+            const q = t.quadrant;
+            if (q === 'AUTOMATE') {
+                if (t.data >= 4 && t.reg >= 4) return { tipo: 'RPA Auditável', acao: 'Automatizar via RPA com trilha de log (UiPath/Power Automate). Alto grau regulatório exige dual-control e logs LGPD.', ferramentas: 'UiPath, Power Automate, BigQuery', timeline: '3-4 semanas' };
+                if (t.data >= 4) return { tipo: 'ETL/Integração', acao: 'Pipeline ETL integrando sistemas. Output previsível + alto volume favorecem automação plena.', ferramentas: 'Zapier, Make, n8n, Airflow', timeline: '2-3 semanas' };
+                if (t.temp >= 4) return { tipo: 'Webhook/Trigger', acao: 'Automação em tempo real via webhooks e triggers. Monitoramento ativo necessário.', ferramentas: 'Zapier, AWS Lambda', timeline: '2 semanas' };
+                return { tipo: 'Automação leve', acao: 'Fluxo no-code eliminando intervenção manual. Mapear edge cases antes.', ferramentas: 'Zapier, Apps Script, Typeform', timeline: '1-2 semanas' };
+            }
+            if (q === 'AUGMENT') {
+                if (t.cog >= 4 && t.creat >= 3) return { tipo: 'Co-piloto estratégico', acao: 'GPT customizado com RAG sobre base interna. Pessoa mantém decisão, IA acelera análise e draft.', ferramentas: 'Custom GPT, Claude Projects, Copilot Studio', timeline: '4-6 semanas' };
+                if (t.stak >= 4 && t.hum >= 3) return { tipo: 'Assistente de comunicação', acao: 'IA para preparação de drafts, resumos de reuniões e prep de QBR. Humano conduz, IA apoia.', ferramentas: 'Fireflies.ai, Otter, Gemini in Workspace', timeline: '3-4 semanas' };
+                if (t.data >= 4) return { tipo: 'BI Conversacional', acao: 'Perguntas em linguagem natural sobre dados. Reduz tempo de análise em ~60%.', ferramentas: 'Looker+Gemini, Tableau Pulse, Power BI Copilot', timeline: '4-6 semanas' };
+                return { tipo: 'Co-piloto generalista', acao: 'Treinar time em ChatGPT/Claude. Loop draft → revisão humana → refinamento.', ferramentas: 'ChatGPT Team, Claude.ai, templates de prompt', timeline: '2-4 semanas' };
+            }
+            if (q === 'TRANSFORM') {
+                if (t.hum >= 4 && t.stak >= 4) return { tipo: 'Redesenho de função', acao: 'Liberar tempo para mentoria, cultura e relacionamentos profundos. IA cuida do operacional adjacente.', ferramentas: 'Workshop Job Crafting, OKRs redesenhados', timeline: '3-6 meses' };
+                if (t.creat >= 4) return { tipo: 'Upskill criativo', acao: 'Capacitação em ferramentas criativas com IA. Preserva autoria humana, acelera produção.', ferramentas: 'Midjourney, Runway, Figma AI', timeline: '2-4 meses' };
+                return { tipo: 'Reskilling dirigido', acao: 'PDI expandindo escopo para atividades de maior valor.', ferramentas: 'PDI 9-box, Coursera/Alura, mentoria', timeline: '3-6 meses' };
+            }
+            return { tipo: 'Proteção e valorização', acao: 'Documentar conhecimento tácito em playbook. Investir em mentoria e reconhecimento — trabalho humano de alto valor.', ferramentas: 'Notion/Confluence, mentoria, comitê de cultura', timeline: 'Contínuo' };
+        }
+
+        function renderStep5() {
+            const automate = appState.results.filter(r => r.quadrant === 'AUTOMATE');
+            const augment = appState.results.filter(r => r.quadrant === 'AUGMENT');
+            const harmAvg = (appState.results.reduce((sum, r) => sum + r.HARM, 0) / appState.results.length).toFixed(2);
+            const hoursSaved = (automate.length * 4 * 0.75 + augment.length * 3 * 0.40).toFixed(1);
+            const totalTasks = appState.results.length;
+            const automationPercentage = ((automate.length + augment.length) / totalTasks * 100).toFixed(0);
+
+            const executiveSummary = document.getElementById('executiveSummary');
+            executiveSummary.innerHTML = `
+                <h3>Sumário Executivo</h3>
+                <div class="summary-item"><span class="summary-highlight">${totalTasks}</span> tarefas analisadas em <span class="summary-highlight">${appState.orgChart.length}</span> cargos</div>
+                <div class="summary-item"><span class="summary-highlight">${automationPercentage}%</span> do trabalho pode ser automatizado ou aumentado</div>
+                <div class="summary-item">Economia estimada: <span class="summary-highlight">${hoursSaved}h/semana</span></div>
+                <div class="summary-item">HARM Score médio organizacional: <span class="summary-highlight">${harmAvg}</span></div>
+            `;
+
+            const quickWinsContainer = document.getElementById('quickWins');
+            quickWinsContainer.innerHTML = '';
+
+            const sortedAutomate = automate.sort((a, b) => b.AS - a.AS).slice(0, 10);
+
+            sortedAutomate.forEach((task, idx) => {
+                const hoursSavedPerTask = (4 * 0.75).toFixed(1);
+                const sug = suggestActionForTask(task);
+                const div = document.createElement('div');
+                div.className = 'quick-win-item';
+                div.innerHTML = `
+                    <div class="quick-win-title">${idx + 1}. ${task.tarefa}</div>
+                    <div class="quick-win-meta">${task.cargo} • AS: ${task.AS.toFixed(2)} • ${hoursSavedPerTask}h/semana economizadas</div>
+                    <div class="quick-win-playbook" style="background:rgba(0,184,148,0.08);border-left:3px solid #00B894;">
+                        <strong style="color:#00B894;">🎯 ${sug.tipo}</strong><br>
+                        <span style="display:block;margin-top:6px;">${sug.acao}</span>
+                        <div style="margin-top:8px;font-size:11px;color:#4A4A6A;">
+                            <strong>Ferramentas:</strong> ${sug.ferramentas} · <strong>Timeline:</strong> ${sug.timeline}
+                        </div>
+                    </div>
+                `;
+                quickWinsContainer.appendChild(div);
+            });
+
+            const horizonsContainer = document.getElementById('horizons');
+            horizonsContainer.innerHTML = '';
+
+            const horizon1 = automate.sort((a,b)=>b.AS-a.AS).slice(0, 5);
+            const horizon2 = augment.sort((a,b)=>b.AuS-a.AuS).slice(0, 5);
+            const horizon3 = appState.results.filter(r => r.quadrant === 'TRANSFORM').sort((a,b)=>b.HARM-a.HARM).slice(0, 5);
+
+            const horizons = [
+                { title: 'Horizonte 1<br>(30 dias)', subtitle: 'Automação Imediata', items: horizon1, color: '#00B894' },
+                { title: 'Horizonte 2<br>(90 dias)', subtitle: 'Co-pilotos IA', items: horizon2, color: '#6C5CE7' },
+                { title: 'Horizonte 3<br>(6 meses)', subtitle: 'Redesenho de Funções', items: horizon3, color: '#FDCB6E' }
+            ];
+
+            horizons.forEach(h => {
+                const div = document.createElement('div');
+                div.className = 'horizon';
+                const itemsHTML = h.items.map(item => {
+                    const sug = suggestActionForTask(item);
+                    return `
+                        <div class="horizon-item" style="padding:10px;border-left:2px solid ${h.color};background:rgba(255,255,255,0.5);margin-bottom:8px;border-radius:4px;">
+                            <div style="font-weight:600;font-size:12px;margin-bottom:4px;">${item.tarefa}</div>
+                            <div style="font-size:10px;color:#6C5CE7;font-weight:600;">→ ${sug.tipo}</div>
+                            <div style="font-size:11px;color:#4A4A6A;margin-top:4px;line-height:1.4;">${sug.acao}</div>
+                        </div>
+                    `;
+                }).join('');
+                div.innerHTML = `
+                    <div class="horizon-title" style="color:${h.color};">${h.title}</div>
+                    <div style="font-size: 12px; color: #4A4A6A; margin-bottom: 12px;">${h.subtitle} · ${h.items.length} tarefas priorizadas</div>
+                    <div class="horizon-items">${itemsHTML || '<div style="color:#999;font-size:11px;">Nenhuma tarefa neste horizonte</div>'}</div>
+                `;
+                horizonsContainer.appendChild(div);
+            });
+
+            const playbookContainer = document.getElementById('playbookCards');
+            playbookContainer.innerHTML = '';
+
+            const playbooks = [
+                {
+                    type: 'AUTOMATE',
+                    title: 'RPA & Integração',
+                    tools: 'Power Automate, Zapier, APIs',
+                    timeline: '2-4 semanas',
+                    steps: '1) Mapear inputs/outputs, 2) Identificar exceções, 3) Construir fluxo automatizado, 4) Monitorar edge cases'
+                },
+                {
+                    type: 'AUGMENT',
+                    title: 'Co-Piloto IA',
+                    tools: 'ChatGPT API, Copilot, LangChain',
+                    timeline: '4-8 semanas',
+                    steps: '1) Definir template de output, 2) Treinar com exemplos, 3) Implementar loop draft-review, 4) Coletar feedback'
+                },
+                {
+                    type: 'TRANSFORM',
+                    title: 'Redesenho de Função',
+                    tools: 'Workshop de design, OKR redesign',
+                    timeline: '3-6 meses',
+                    steps: '1) Mapear skills adjacentes, 2) Definir nova descrição de cargo, 3) Plano de capacitação, 4) Transição gradual'
+                },
+                {
+                    type: 'PRESERVE',
+                    title: 'Proteção & Valorização',
+                    tools: 'Documentação, mentoria',
+                    timeline: 'Contínuo',
+                    steps: '1) Documentar conhecimento tácito, 2) Criar programa de mentoria, 3) Definir métricas de qualidade, 4) Investir em capacitação'
+                }
+            ];
+
+            playbooks.forEach(pb => {
+                const div = document.createElement('div');
+                div.className = `playbook-card ${pb.type.toLowerCase()}`;
+                div.innerHTML = `
+                    <div class="playbook-title">${pb.title}</div>
+                    <div class="playbook-section">
+                        <div class="playbook-label">Ferramentas:</div>
+                        <div class="playbook-content">${pb.tools}</div>
+                    </div>
+                    <div class="playbook-section">
+                        <div class="playbook-label">Timeline:</div>
+                        <div class="playbook-content">${pb.timeline}</div>
+                    </div>
+                    <div class="playbook-section">
+                        <div class="playbook-label">Passos:</div>
+                        <div class="playbook-content">${pb.steps}</div>
+                    </div>
+                `;
+                playbookContainer.appendChild(div);
+            });
+
+            const sector = appState.companyInfo.sector || 'seu setor';
+            const benchmark = document.getElementById('benchmark');
+            benchmark.innerHTML = `
+                <div class="benchmark-title">Benchmark do Setor</div>
+                <div class="benchmark-item">Empresas do setor <strong>${sector}</strong> têm em média <strong>42%</strong> de tarefas automatizáveis</div>
+                <div class="benchmark-item">Seu índice HARM está <strong>acima</strong> da média do setor (${harmAvg} vs 2.8)</div>
+            `;
+        }
+
+        function goToStep(step) {
+            if (step < 0 || step > 6) return;
+            appState.currentStep = step;
+
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelector(`#step-${step}`).classList.add('active');
+
+            if (step >= 1) {
+                document.querySelectorAll('.step-item').forEach(item => item.classList.remove('active'));
+                const sidebarItem = document.querySelector(`[data-step="${step}"]`);
+                if (sidebarItem) sidebarItem.classList.add('active');
+                const progressPercentage = (step / 6) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+            } else {
+                document.getElementById('progressFill').style.width = '0%';
+            }
+
+            document.querySelector('.main').scrollTop = 0;
+        }
+
+        // === Benchmarking ===
+        let bmFilterOptionsLoaded = false;
+
+        async function renderBenchmark() {
+            const status = document.getElementById('bmStatus');
+            const comparison = document.getElementById('bmComparison');
+            status.textContent = 'Consultando base...';
+
+            const dir = document.getElementById('bmFilterDiretoria').value;
+            const area = document.getElementById('bmFilterArea').value;
+            const cargo = document.getElementById('bmFilterCargo').value;
+
+            try {
+                const base = ENDPOINTS.saveOrg.split('?')[0];
+                const params = new URLSearchParams({
+                    action: 'getBenchmark',
+                    exclude_empresa_id: appState.empresaId || '',
+                    diretoria: dir,
+                    area: area,
+                    cargo: cargo
+                });
+                const res = await fetch(base + '?' + params.toString());
+                const data = await res.json();
+
+                if (!data.success) {
+                    comparison.innerHTML = '<div style="color:#E74C3C;">Erro: ' + (data.error || 'desconhecido') + '</div>';
+                    return;
+                }
+
+                // Primeira vez: popular dropdowns de filtro
+                if (!bmFilterOptionsLoaded && data.opcoes_filtro) {
+                    populateBenchmarkFilters(data.opcoes_filtro);
+                    bmFilterOptionsLoaded = true;
+                }
+
+                renderBenchmarkContent(data);
+                status.textContent = `Baseado em ${data.benchmark ? data.benchmark.empresas_distintas : 0} empresa(s) • ${data.benchmark ? data.benchmark.total : 0} tarefas no recorte`;
+            } catch (err) {
+                comparison.innerHTML = '<div style="color:#FDCB6E;">⚠️ Backend offline. Benchmark indisponível em modo local.</div>';
+                status.textContent = '';
+            }
+        }
+
+        function populateBenchmarkFilters(opts) {
+            const fillSelect = (id, values) => {
+                const sel = document.getElementById(id);
+                const current = sel.value;
+                sel.innerHTML = '<option value="">Todas</option>';
+                values.forEach(v => {
+                    const o = document.createElement('option');
+                    o.value = v; o.textContent = v;
+                    sel.appendChild(o);
+                });
+                if (values.includes(current)) sel.value = current;
+            };
+            fillSelect('bmFilterDiretoria', opts.diretorias || []);
+            fillSelect('bmFilterArea', opts.areas || []);
+            fillSelect('bmFilterCargo', opts.cargos || []);
+        }
+
+        function renderBenchmarkContent(data) {
+            const my = data.minha_empresa;
+            const bm = data.benchmark;
+            const comparison = document.getElementById('bmComparison');
+            const barsEl = document.getElementById('bmQuadrantBars');
+            const tasksEl = document.getElementById('bmCommonTasks');
+
+            // Comparação lado a lado
+            if (!my || !bm) {
+                comparison.innerHTML = `<div style="color:#4A4A6A;">Filtro sem sobreposição com sua empresa ou base de benchmark vazia para este recorte.</div>`;
+            } else {
+                const rows = [
+                    { label: 'Total de tarefas', my: my.total, bm: bm.total, unit: '' },
+                    { label: 'AS médio (potencial de automação)', my: my.as_medio, bm: bm.as_medio, unit: '' },
+                    { label: 'AuS médio (potencial de augmentação)', my: my.aus_medio, bm: bm.aus_medio, unit: '' },
+                    { label: 'HARM médio (preservação humana)', my: my.harm_medio, bm: bm.harm_medio, unit: '' },
+                    { label: '% AUTOMATE', my: my.pct_automate, bm: bm.pct_automate, unit: '%' },
+                    { label: '% AUGMENT', my: my.pct_augment, bm: bm.pct_augment, unit: '%' },
+                    { label: '% TRANSFORM', my: my.pct_transform, bm: bm.pct_transform, unit: '%' },
+                    { label: '% PRESERVE', my: my.pct_preserve, bm: bm.pct_preserve, unit: '%' }
+                ];
+                comparison.innerHTML = `
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:2px solid #E0E0E8;">
+                                <th style="text-align:left;padding:10px;font-size:12px;color:#4A4A6A;">Métrica</th>
+                                <th style="text-align:right;padding:10px;font-size:12px;color:#6C5CE7;">Sua empresa</th>
+                                <th style="text-align:right;padding:10px;font-size:12px;color:#4A4A6A;">Benchmark</th>
+                                <th style="text-align:right;padding:10px;font-size:12px;color:#4A4A6A;">Δ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map(r => {
+                                const delta = (r.my - r.bm).toFixed(r.unit === '%' ? 1 : 2);
+                                const up = parseFloat(delta) > 0;
+                                const color = up ? '#00B894' : (parseFloat(delta) < 0 ? '#E74C3C' : '#999');
+                                return `<tr style="border-bottom:1px solid #F0F0F5;">
+                                    <td style="padding:10px;font-size:13px;">${r.label}</td>
+                                    <td style="padding:10px;text-align:right;font-weight:600;color:#6C5CE7;">${r.my}${r.unit}</td>
+                                    <td style="padding:10px;text-align:right;color:#4A4A6A;">${r.bm}${r.unit}</td>
+                                    <td style="padding:10px;text-align:right;color:${color};font-weight:600;">${up ? '+' : ''}${delta}${r.unit}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            // Bars comparativas
+            if (bm) {
+                const quadColors = { AUTOMATE: '#00B894', AUGMENT: '#6C5CE7', TRANSFORM: '#FDCB6E', PRESERVE: '#0984E3' };
+                let barsHTML = '<div style="display:flex;flex-direction:column;gap:16px;">';
+                ['AUTOMATE','AUGMENT','TRANSFORM','PRESERVE'].forEach(q => {
+                    const myPct = my ? my['pct_' + q.toLowerCase()] : 0;
+                    const bmPct = bm['pct_' + q.toLowerCase()];
+                    barsHTML += `
+                        <div>
+                            <div style="display:flex;justify-content:space-between;font-size:11px;color:#4A4A6A;margin-bottom:4px;">
+                                <span style="font-weight:600;color:${quadColors[q]};">${q}</span>
+                                <span>Sua: ${myPct}% · Benchmark: ${bmPct}%</span>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <div style="flex:1;background:#F0F0F5;border-radius:4px;height:20px;position:relative;">
+                                    <div style="width:${myPct}%;height:100%;background:${quadColors[q]};border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:10px;color:#999;min-width:80px;">Sua empresa</span>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+                                <div style="flex:1;background:#F0F0F5;border-radius:4px;height:20px;position:relative;">
+                                    <div style="width:${bmPct}%;height:100%;background:${quadColors[q]};opacity:0.4;border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:10px;color:#999;min-width:80px;">Benchmark</span>
+                            </div>
+                        </div>`;
+                });
+                barsHTML += '</div>';
+                barsEl.innerHTML = barsHTML;
+            } else {
+                barsEl.innerHTML = '<div style="color:#999;font-size:13px;">Sem dados suficientes para gráfico comparativo.</div>';
+            }
+
+            // Tarefas mais comuns
+            const commons = data.tarefas_mais_comuns || [];
+            if (commons.length === 0) {
+                tasksEl.innerHTML = '<div style="color:#999;font-size:13px;">Nenhuma tarefa encontrada no recorte.</div>';
+            } else {
+                const quadBadge = (qs) => {
+                    const top = Object.entries(qs).sort((a,b) => b[1]-a[1])[0];
+                    const colors = { AUTOMATE:'#00B894', AUGMENT:'#6C5CE7', TRANSFORM:'#FDCB6E', PRESERVE:'#0984E3' };
+                    return `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${colors[top[0]]};color:white;font-weight:600;">${top[0]}</span>`;
+                };
+                tasksEl.innerHTML = commons.map((c, i) => `
+                    <div style="padding:12px;border:1px solid #E0E0E8;border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;font-size:13px;margin-bottom:2px;">${i+1}. ${c.sample}</div>
+                            <div style="font-size:11px;color:#4A4A6A;">${c.count} ocorrência(s) em empresas diferentes</div>
+                        </div>
+                        ${quadBadge(c.quadrants)}
+                    </div>
+                `).join('');
+            }
+        }
+
+        function restart() {
+            appState = {
+                empresaId: generateId('EMP'),
+                currentStep: 0,
+                userEmail: '',
+                companyInfo: {},
+                orgChart: [],
+                tasks: [],
+                results: []
+            };
+            goToStep(0);
+            renderOrgTable(DEMO_ORG_DATA.length);
+            document.getElementById('companyName').value = '';
+            document.getElementById('companySector').value = '';
+            document.getElementById('employeeCount').value = '';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginStatus').innerHTML = '';
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').textContent = 'Continuar →';
+        }
+
+        function buildSavePayload() {
+            const now = new Date().toISOString();
+            const empresa = {
+                id: appState.empresaId,
+                nome: appState.companyInfo.name,
+                setor: appState.companyInfo.sector,
+                num_colaboradores: appState.companyInfo.employees,
+                email_contato: appState.userEmail || appState.companyInfo.email_contato || '',
+                data_criacao: appState.companyInfo.data_criacao || now,
+                data_atualizacao: now,
+                status: 'ativo'
+            };
+            const organograma = appState.orgChart.map(row => ({
+                empresa_id: appState.empresaId,
+                ...row
+            }));
+            const tarefas = appState.results.map(r => ({
+                id: r.id, empresa_id: r.empresa_id, cargo: r.cargo, diretoria: r.diretoria, area: r.area,
+                tarefa: r.tarefa, cog: r.cog, data_dep: r.data, hum: r.hum, stak: r.stak, reg: r.reg,
+                var: r.var, creat: r.creat, temp: r.temp, AS: r.AS, AuS: r.AuS, HARM: r.HARM,
+                DNA: r.DNA, quadrant: r.quadrant, data_criacao: r.data_criacao || now, data_atualizacao: now
+            }));
+            const agregados = [];
+            const addAgregado = (nivel, nome, tasks) => {
+                const q = {
+                    AUTOMATE: tasks.filter(t => t.quadrant === 'AUTOMATE').length,
+                    AUGMENT: tasks.filter(t => t.quadrant === 'AUGMENT').length,
+                    TRANSFORM: tasks.filter(t => t.quadrant === 'TRANSFORM').length,
+                    PRESERVE: tasks.filter(t => t.quadrant === 'PRESERVE').length
+                };
+                const hrsLib = q.AUTOMATE * 4 * 0.75 + q.AUGMENT * 3 * 0.40;
+                agregados.push({
+                    empresa_id: appState.empresaId, nivel, nome_cluster: nome, total_tarefas: tasks.length,
+                    qtd_automate: q.AUTOMATE, qtd_augment: q.AUGMENT, qtd_transform: q.TRANSFORM, qtd_preserve: q.PRESERVE,
+                    as_medio: parseFloat((tasks.reduce((s,t) => s + t.AS, 0) / tasks.length).toFixed(2)),
+                    aus_medio: parseFloat((tasks.reduce((s,t) => s + t.AuS, 0) / tasks.length).toFixed(2)),
+                    harm_medio: parseFloat((tasks.reduce((s,t) => s + t.HARM, 0) / tasks.length).toFixed(2)),
+                    horas_liberadas_semana: parseFloat(hrsLib.toFixed(1)),
+                    roi_anual: parseFloat((hrsLib * 52 * 75).toFixed(0)),
+                    data_calculo: now
+                });
+            };
+            [...new Set(appState.results.map(r => r.cargo))].forEach(c => addAgregado('cargo', c, appState.results.filter(r => r.cargo === c)));
+            [...new Set(appState.results.map(r => r.area))].forEach(a => addAgregado('area', a, appState.results.filter(r => r.area === a)));
+            [...new Set(appState.results.map(r => r.diretoria))].forEach(d => addAgregado('diretoria', d, appState.results.filter(r => r.diretoria === d)));
+            addAgregado('organizacao', appState.companyInfo.name, appState.results);
+            return { empresa, organograma, tarefas, resultados_agregados: agregados };
+        }
+
+        async function saveToSheets() {
+            const payload = buildSavePayload();
+            console.log('📊 Payload completo para persistência:', JSON.stringify(payload, null, 2));
+            try {
+                const response = await fetch(ENDPOINTS.saveResults, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                alert('Dados salvos com sucesso! ID: ' + appState.empresaId);
+                return result;
+            } catch (err) {
+                console.log('⚠️ Endpoints não configurados. Payload no console.');
+                alert('Endpoints não configurados. Payload no console (F12).\nID: ' + appState.empresaId);
+            }
+        }
+
+        function exportCSV() {
+            const headers = ['id', 'empresa_id', 'cargo', 'diretoria', 'area', 'tarefa', 'cog', 'data_dep', 'hum', 'stak', 'reg', 'var', 'creat', 'temp', 'AS', 'AuS', 'HARM', 'DNA', 'quadrant'];
+            const rows = appState.results.map(r => headers.map(h => {
+                const val = h === 'data_dep' ? r.data : r[h];
+                return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+            }));
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `WorkDesigner_${appState.empresaId}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
